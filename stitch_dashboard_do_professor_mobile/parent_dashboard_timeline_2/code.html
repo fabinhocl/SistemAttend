@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Painel do Responsável</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-white dark:bg-slate-900 shadow-2xl">
+<!-- Header -->
+<header class="flex items-center bg-white dark:bg-slate-900 p-4 sticky top-0 z-10 border-b border-slate-100 dark:border-slate-800">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">dashboard</span>
+</div>
+<h1 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight flex-1 text-center">Painel do Responsável</h1>
+<div class="flex w-10 items-center justify-end">
+<button class="relative flex items-center justify-center rounded-lg h-10 w-10 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 flex h-2 w-2 rounded-full bg-red-500"></span>
+</button>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto pb-24">
+<!-- Student Selection -->
+<section class="px-4 py-6 bg-white dark:bg-slate-900">
+<h3 class="text-slate-900 dark:text-slate-100 text-sm font-semibold uppercase tracking-wider mb-4">SEUS FILHOS</h3>
+<div class="flex gap-4 overflow-x-auto hide-scrollbar">
+<div class="flex flex-col items-center gap-2">
+<div class="relative ring-4 ring-primary p-0.5 rounded-full">
+<img alt="Student" class="size-14 rounded-full object-cover shadow-sm" data-alt="Profile photo of a young student girl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5Lq5nUrH8A3Q3x_yw2pLrGjtR_kffz8ibiCnewnmtgOdQx3cvTkazn4sPJm-R74EBEefScIiIj_29ZnBHcJn1GIIniNLtkOzFdpQPsP9vP349emRLWSgJIzEPpWORkupZnXE52FSrhQr6FTGjvGCK7X22MKXbGyW77GAvXtzjcUEFOf4j9FtYTAHM4YxKiKYeZPU-oodYt_9oRj-bew4HlzXbCBS-lL4REqzAJq_tyBnUmiCRyF8z-81XNaj6nUDgE8CTIfs5pBpR"/>
+</div>
+<span class="text-xs font-bold text-primary">Chloe</span>
+</div>
+<div class="flex flex-col items-center gap-2 opacity-50">
+<img alt="Student" class="size-14 rounded-full object-cover grayscale" data-alt="Profile photo of a young student boy" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAA4Fuu7foBrX5cxyhaZJS2w_nZ7Jw2ApKlGFfg154Uh65CTKIPsu5P_6JeKIfPiIDA7uHeCf_thHQhUG5onqoexKVwAcs8zvXy91AZ3_T7BgXc9CYIx04r21DiKtVi6PcEVR6CLK7RavLUPktff3B39JLewmB9i4xOyKzhOmB5WnSrLYucB5j9_8Br-7Y6nVa1GRC31_fOuR09tq57cH_ehM3zTgYeQIPnHiV7zqkypaKk5irxWDYSeQ8E2e92IAGLwm8Dr3Ptk_z"/>
+<span class="text-xs font-medium text-slate-500">James</span>
+</div>
+<div class="flex flex-col items-center gap-2 opacity-50">
+<img alt="Student" class="size-14 rounded-full object-cover grayscale" data-alt="Profile photo of a teenage student girl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqsScyeqXMgje066uBDO1lmDXLReJJMhjjQvBuS9bFsko9uubXOHmtPzsEAR4SespvRR9n5phyRsF4xz8giJsMFbi7iK-tdoaGkuw5QtIStcvbJxi_l73rG2K1JAWOwiK-hdzEcrzXdV6GXlxrjpSw_KKkbfBFSnt5ruAuUuYfCjZeWbOoURChXC7JmKVZt5I9iNRTeweCdxjVL5Pm1R-FqA0keYGjywlenp5yk4ZgZeWl5f_BrBAArVC7eVx8BSm0ajdyLx7Fk0RN"/>
+<span class="text-xs font-medium text-slate-500">Lily</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<button class="size-14 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center text-slate-400">
+<span class="material-symbols-outlined">add</span>
+</button>
+<span class="text-xs font-medium text-slate-500">Adicionar</span>
+</div>
+</div>
+</section>
+<!-- Quick Action: Fees -->
+<section class="p-4">
+<div class="flex items-center justify-between gap-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">account_balance_wallet</span>
+<p class="text-slate-900 dark:text-slate-100 text-base font-bold">Mensalidades em Aberto</p>
+</div>
+<p class="text-slate-600 dark:text-slate-400 text-sm">Mensalidade do 2º Trimestre: R$ 1.240,00</p>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-md transition-colors whitespace-nowrap">Pagar Agora</button>
+</div>
+</section>
+<!-- Timeline of Activities -->
+<section class="px-4 py-6">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-bold">Linha do Tempo de Atividades</h3>
+<button class="text-primary text-sm font-medium">Ver Tudo</button>
+</div>
+<div class="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-slate-200 before:via-slate-200 before:to-transparent dark:before:from-slate-700 dark:before:via-slate-700">
+<!-- Timeline Item: Overdue Assignment -->
+<div class="relative flex items-start gap-4">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600 z-10">
+<span class="material-symbols-outlined">assignment_late</span>
+</div>
+<div class="flex flex-col gap-1 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 w-full">
+<div class="flex justify-between items-start">
+<span class="text-red-600 text-[10px] font-bold uppercase tracking-wider">ATRASADO</span>
+<span class="text-slate-400 text-[10px]">2h atrás</span>
+</div>
+<h4 class="text-slate-900 dark:text-slate-100 font-bold text-sm">Redação de História: Segunda Guerra Mundial</h4>
+<p class="text-slate-600 dark:text-slate-400 text-xs">O prazo de entrega era ontem às 23:59.</p>
+<div class="mt-2 flex gap-2">
+<button class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold rounded-lg uppercase">CONTATAR PROFESSOR</button>
+</div>
+</div>
+</div>
+<!-- Timeline Item: Recent Feedback -->
+<div class="relative flex items-start gap-4">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 z-10">
+<span class="material-symbols-outlined">chat_bubble</span>
+</div>
+<div class="flex flex-col gap-1 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 w-full">
+<div class="flex justify-between items-start">
+<span class="text-green-600 text-[10px] font-bold uppercase tracking-wider">FEEDBACK DO PROFESSOR</span>
+<span class="text-slate-400 text-[10px]">5h atrás</span>
+</div>
+<h4 class="text-slate-900 dark:text-slate-100 font-bold text-sm">Matemática: Quiz de Álgebra</h4>
+<p class="text-slate-600 dark:text-slate-400 text-xs italic">"Chloe mostrou grande melhora em equações do segundo grau hoje. Foco excelente!" - Mr. Henderson</p>
+</div>
+</div>
+<!-- Timeline Item: Upcoming Exam -->
+<div class="relative flex items-start gap-4">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary z-10">
+<span class="material-symbols-outlined">event</span>
+</div>
+<div class="flex flex-col gap-1 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 w-full">
+<div class="flex justify-between items-start">
+<span class="text-primary text-[10px] font-bold uppercase tracking-wider">PRÓXIMA PROVA</span>
+<span class="text-slate-400 text-[10px]">Em 3 dias</span>
+</div>
+<h4 class="text-slate-900 dark:text-slate-100 font-bold text-sm">Prova de Ciências</h4>
+<p class="text-slate-600 dark:text-slate-400 text-xs">Sexta-feira, 24 de Outubro • Sala 302 • 09:00</p>
+<div class="mt-2 flex gap-2 overflow-x-auto hide-scrollbar">
+<span class="bg-primary/10 text-primary text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap">Materiais de Estudo Anexados</span>
+<span class="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap">Biologia</span>
+</div>
+</div>
+</div>
+<!-- Timeline Item: Grade Updated -->
+<div class="relative flex items-start gap-4">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 z-10">
+<span class="material-symbols-outlined">grade</span>
+</div>
+<div class="flex flex-col gap-1 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 w-full">
+<div class="flex justify-between items-start">
+<span class="text-amber-600 text-[10px] font-bold uppercase tracking-wider">NOTA LANÇADA</span>
+<span class="text-slate-400 text-[10px]">Ontem</span>
+</div>
+<div class="flex justify-between items-center">
+<h4 class="text-slate-900 dark:text-slate-100 font-bold text-sm">Quiz de Literatura Inglesa</h4>
+<span class="text-primary font-bold text-lg">A-</span>
+</div>
+<p class="text-slate-600 dark:text-slate-400 text-xs">Top 15% da turma.</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 pb-6 pt-3 flex justify-between items-end">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">home</span>
+<span class="text-[10px] font-semibold">Início</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="text-[10px] font-semibold">Mensagens</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">school</span>
+<span class="text-[10px] font-semibold">Notas</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-semibold">Perfil</span>
+</a>
+</nav>
+</div>
+</body></html>

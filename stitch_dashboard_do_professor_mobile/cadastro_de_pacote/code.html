@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<html lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<title>Configuração de Pacote</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex h-auto min-h-screen w-full flex-col max-w-[480px] mx-auto bg-white dark:bg-background-dark shadow-xl">
+<div class="flex items-center bg-white dark:bg-background-dark p-4 pb-2 justify-between border-b border-slate-100 dark:border-slate-800 sticky top-0 z-10">
+<div class="text-slate-900 dark:text-slate-100 flex size-12 shrink-0 items-center cursor-pointer">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-12">Configurar Pacote</h2>
+</div>
+<div class="flex flex-col p-4">
+<div class="mb-6">
+<h3 class="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight tracking-tight mb-1">Detalhes do Pacote</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Crie um pacote de aulas personalizado para seus alunos.</p>
+</div>
+<div class="space-y-6">
+<div class="flex flex-col gap-2">
+<label class="flex flex-col w-full">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-semibold pb-2">Nome do Pacote</p>
+<div class="relative">
+<input class="form-input flex w-full rounded-lg text-slate-900 dark:text-slate-100 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 h-14 placeholder:text-slate-400 dark:placeholder:text-slate-600 px-4 text-base font-normal" placeholder="Ex: Semestral Matemática" value=""/>
+</div>
+</label>
+</div>
+<div class="flex flex-col gap-2">
+<label class="flex flex-col w-full">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-semibold pb-2">Número de Aulas</p>
+<div class="flex w-full items-stretch rounded-lg shadow-sm">
+<input class="form-input flex w-full min-w-0 flex-1 rounded-l-lg text-slate-900 dark:text-slate-100 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 h-14 placeholder:text-slate-400 dark:placeholder:text-slate-600 px-4 text-base font-normal border-r-0" placeholder="Ex: 24" type="number" value=""/>
+<div class="text-slate-400 dark:text-slate-500 flex border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 items-center justify-center px-4 rounded-r-lg">
+<span class="material-symbols-outlined">tag</span>
+</div>
+</div>
+</label>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<label class="flex flex-col">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-semibold pb-2">Preço (R$)</p>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="text-slate-500 dark:text-slate-400 text-sm font-medium">R$</span>
+</div>
+<input class="form-input flex w-full rounded-lg text-slate-900 dark:text-slate-100 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 h-14 placeholder:text-slate-400 dark:placeholder:text-slate-600 pl-11 pr-4 text-base font-normal" placeholder="0,00" value=""/>
+</div>
+</label>
+<label class="flex flex-col">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-semibold pb-2">Validade</p>
+<div class="relative">
+<input class="form-input flex w-full rounded-lg text-slate-900 dark:text-slate-100 focus:outline-0 focus:ring-2 focus:ring-primary border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 h-14 placeholder:text-slate-400 dark:placeholder:text-slate-600 px-4 text-base font-normal" placeholder="Ex: 6 meses" value=""/>
+</div>
+</label>
+</div>
+<div class="bg-primary/5 dark:bg-primary/10 rounded-xl p-4 border border-primary/10 dark:border-primary/20 mt-4">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5">info</span>
+<div>
+<p class="text-sm font-medium text-slate-900 dark:text-slate-100">Resumo do Pacote</p>
+<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-1">Este pacote ficará visível no seu perfil público. Alunos poderão adquirir diretamente pela plataforma.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-auto p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-background-dark">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-primary/25 transition-all active:scale-[0.98]">
+                Criar Pacote
+            </button>
+<p class="text-center text-slate-400 dark:text-slate-500 text-xs mt-4">Você pode editar ou excluir este pacote a qualquer momento.</p>
+</div>
+<div class="h-6 bg-white dark:bg-background-dark"></div>
+</div>
+</body></html>

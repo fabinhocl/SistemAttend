@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Painel do Aluno</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "success": "#10b981",
+                        "warning": "#f59e0b"
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            min-height: max(884px, 100dvh);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-1 {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="relative flex h-screen w-full flex-col overflow-hidden max-w-[430px] mx-auto bg-white dark:bg-background-dark border-x border-slate-200 dark:border-slate-800">
+<div class="flex items-center bg-white dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
+<div class="flex size-10 shrink-0 items-center">
+<div class="bg-primary/10 rounded-full p-1.5">
+<span class="material-symbols-outlined text-primary">school</span>
+</div>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center">Painel do Aluno</h2>
+<div class="flex w-10 items-center justify-end">
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto pb-32">
+<div class="flex p-4">
+<div class="flex w-full flex-col gap-4 bg-primary/5 dark:bg-primary/10 p-5 rounded-xl border border-primary/10">
+<div class="flex gap-4 items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-16 w-16 border-2 border-white dark:border-slate-700 shadow-sm" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDeuMgHmkW9vHdKBkUL9y3K-GtKviRHhse_ICeTwvDwd-v_zZjYIDI3IjOT7v4qFQG8HlWFRQ55UKP55KneT28zTEwE0Z5juVPPJbFr_0Thij_L04aO0xx8ItP3utOfhwVJiw20gUcE88sNCWhAOI8w5XMd1YmaCs5muBQVm47yAimkxWjmDEgqgW-cxs-7haazFyt87Thamk0dJ4DbebvSwfT8Z7oop2_ZYVYYY8bvjU4nIvQljNPWr1F9438Qjm5ksGorNlt2IERJ");'></div>
+<div class="flex flex-col justify-center">
+<p class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight">Alex Johnson</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium">1º Ano Médio • Turma B</p>
+<div class="mt-1 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-primary/20 text-primary uppercase">
+                                Matrícula: #88291
+                            </div>
+</div>
+</div>
+</div>
+</div>
+<div class="px-4 py-2">
+<h3 class="text-slate-900 dark:text-slate-100 text-base font-bold mb-3">Financeiro</h3>
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="flex flex-col">
+<span class="text-xs text-slate-500 dark:text-slate-400">Mensalidade de Outubro</span>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="size-2 rounded-full bg-success"></span>
+<span class="text-sm font-bold text-success">Pago</span>
+</div>
+</div>
+<div class="text-right">
+<span class="text-lg font-bold text-slate-900 dark:text-slate-100">R$ 850,00</span>
+</div>
+</div>
+<button class="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-lg font-bold text-sm shadow-sm active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-xl">qr_code_2</span>
+                        Gerar Boleto / Pix
+                    </button>
+</div>
+</div>
+<div class="px-4 py-4">
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-slate-900 dark:text-slate-100 text-base font-bold">Próximas Aulas</h3>
+<span class="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase">Hoje</span>
+</div>
+<div class="flex flex-col gap-3">
+<div class="flex items-center gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl shadow-sm">
+<div class="flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-lg min-w-[60px] py-2">
+<span class="text-xs font-bold text-slate-500">08:00</span>
+<span class="text-[10px] text-slate-400">08:50</span>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Matemática</h4>
+<div class="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">meeting_room</span>
+<span class="text-xs font-medium">Sala 12 - Bloco A</span>
+</div>
+</div>
+<div class="size-2 rounded-full bg-primary"></div>
+</div>
+<div class="flex items-center gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl shadow-sm">
+<div class="flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-lg min-w-[60px] py-2">
+<span class="text-xs font-bold text-slate-500">08:50</span>
+<span class="text-[10px] text-slate-400">09:40</span>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">História</h4>
+<div class="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">meeting_room</span>
+<span class="text-xs font-medium">Sala 05 - Bloco B</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl shadow-sm">
+<div class="flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-lg min-w-[60px] py-2">
+<span class="text-xs font-bold text-slate-500">10:00</span>
+<span class="text-[10px] text-slate-400">10:50</span>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Física</h4>
+<div class="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">meeting_room</span>
+<span class="text-xs font-medium">Laboratório 2</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="px-4 py-2">
+<h3 class="text-slate-900 dark:text-slate-100 text-base font-bold mb-3">Acesso Rápido</h3>
+<div class="grid grid-cols-4 gap-3">
+<div class="flex flex-col gap-2 items-center">
+<div class="text-primary bg-primary/10 p-3 rounded-xl shadow-sm active:bg-primary/20 transition-colors w-full flex justify-center">
+<span class="material-symbols-outlined">grade</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-[10px] font-bold">Notas</h2>
+</div>
+<div class="flex flex-col gap-2 items-center">
+<div class="text-primary bg-primary/10 p-3 rounded-xl shadow-sm active:bg-primary/20 transition-colors w-full flex justify-center">
+<span class="material-symbols-outlined">event_available</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-[10px] font-bold">Faltas</h2>
+</div>
+<div class="flex flex-col gap-2 items-center">
+<div class="text-primary bg-primary/10 p-3 rounded-xl shadow-sm active:bg-primary/20 transition-colors w-full flex justify-center">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-[10px] font-bold">Horário</h2>
+</div>
+<div class="flex flex-col gap-2 items-center">
+<div class="text-primary bg-primary/10 p-3 rounded-xl shadow-sm active:bg-primary/20 transition-colors w-full flex justify-center">
+<span class="material-symbols-outlined">menu_book</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-[10px] font-bold">Tarefas</h2>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] border-t border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-background-dark/90 backdrop-blur-md px-4 pb-8 pt-3 flex justify-between items-center z-20">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined !text-[26px] fill-1">home</span>
+<p class="text-[10px] font-bold">Início</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined !text-[26px]">chat_bubble</span>
+<p class="text-[10px] font-medium">Mensagens</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined !text-[26px]">calendar_month</span>
+<p class="text-[10px] font-medium">Eventos</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined !text-[26px]">person</span>
+<p class="text-[10px] font-medium">Perfil</p>
+</a>
+</div>
+</div>
+
+</body></html>

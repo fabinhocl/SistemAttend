@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Painel Financeiro Detalhado</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#135bec",
+              "background-light": "#f6f6f8",
+              "background-dark": "#101622",
+            },
+            fontFamily: {
+              "display": ["Lexend"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Lexend', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="max-w-5xl mx-auto flex flex-col min-h-screen pb-20">
+<!-- Header -->
+<header class="flex items-center bg-white dark:bg-slate-900 p-4 border-b border-slate-200 dark:border-slate-800 justify-between sticky top-0 z-10">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl">account_balance_wallet</span>
+<h1 class="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight tracking-tight">Painel Financeiro</h1>
+</div>
+<div class="flex gap-2">
+<button class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">search</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+</button>
+</div>
+</header>
+<main class="flex-1 p-4 lg:p-6 space-y-6">
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-emerald-500">trending_up</span>
+<p class="text-sm font-medium">Receita Total</p>
+</div>
+<p class="text-slate-900 dark:text-slate-100 text-2xl font-bold leading-tight">R$ 12.500,00</p>
+<p class="text-emerald-600 dark:text-emerald-400 text-xs font-semibold">+8.5% este mês</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-amber-500">pending_actions</span>
+<p class="text-sm font-medium">Pagamentos Pendentes</p>
+</div>
+<p class="text-slate-900 dark:text-slate-100 text-2xl font-bold leading-tight">R$ 1.200,00</p>
+<p class="text-rose-600 dark:text-rose-400 text-xs font-semibold">3 faturas em atraso</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-primary">package_2</span>
+<p class="text-sm font-medium">Pacotes Ativos</p>
+</div>
+<p class="text-slate-900 dark:text-slate-100 text-2xl font-bold leading-tight">15</p>
+<p class="text-primary text-xs font-semibold">+2 novos alunos</p>
+</div>
+</div>
+<!-- Chart Section -->
+<section class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+<div>
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-bold">Ganhos Mensais</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Faturamento anual de 2023</p>
+</div>
+<div class="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
+<button class="px-3 py-1 text-sm font-medium bg-white dark:bg-slate-700 rounded shadow-sm text-primary">Semestre</button>
+<button class="px-3 py-1 text-sm font-medium text-slate-500 dark:text-slate-400">Ano</button>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex items-baseline gap-2 mb-4">
+<p class="text-slate-900 dark:text-slate-100 text-3xl font-bold">R$ 45.800</p>
+<span class="text-emerald-600 dark:text-emerald-400 text-sm font-medium">+12% vs ano ant.</span>
+</div>
+<div class="h-64 flex items-end justify-between gap-2 px-2 pt-4">
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/20 hover:bg-primary rounded-t transition-all" style="height: 65%;"></div>
+<span class="text-slate-500 text-xs font-bold">Jan</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/20 hover:bg-primary rounded-t transition-all" style="height: 45%;"></div>
+<span class="text-slate-500 text-xs font-bold">Fev</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/20 hover:bg-primary rounded-t transition-all" style="height: 80%;"></div>
+<span class="text-slate-500 text-xs font-bold">Mar</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary hover:bg-primary/80 rounded-t transition-all" style="height: 100%;"></div>
+<span class="text-primary text-xs font-bold">Abr</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/20 hover:bg-primary rounded-t transition-all" style="height: 85%;"></div>
+<span class="text-slate-500 text-xs font-bold">Mai</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/20 hover:bg-primary rounded-t transition-all" style="height: 60%;"></div>
+<span class="text-slate-500 text-xs font-bold">Jun</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Transactions List -->
+<section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-bold">Transações Recentes</h3>
+<button class="text-primary text-sm font-semibold hover:underline">Ver tudo</button>
+</div>
+<div class="divide-y divide-slate-100 dark:divide-slate-800">
+<div class="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100">Ana Silva - Inglês Avançado</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">12 de Out, 2023 • Cartão de Crédito</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-emerald-600">+ R$ 450,00</p>
+<span class="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-bold uppercase">Confirmado</span>
+</div>
+</div>
+<div class="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100">Carlos Mendes - Reforço Escolar</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">10 de Out, 2023 • Pix</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-emerald-600">+ R$ 320,00</p>
+<span class="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-bold uppercase">Confirmado</span>
+</div>
+</div>
+<div class="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100">Juliana Costa - Piano</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">08 de Out, 2023 • Boleto</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-slate-600 dark:text-slate-400">R$ 280,00</p>
+<span class="text-[10px] px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-bold uppercase">Pendente</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 pb-3 pt-2 z-20">
+<div class="max-w-5xl mx-auto flex gap-2">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined">home</span>
+</div>
+<p class="text-xs font-medium leading-normal tracking-tight">Início</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined">group</span>
+</div>
+<p class="text-xs font-medium leading-normal tracking-tight">Alunos</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined font-bold" style="font-variation-settings: 'FILL' 1">account_balance_wallet</span>
+</div>
+<p class="text-xs font-bold leading-normal tracking-tight">Financeiro</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined">settings</span>
+</div>
+<p class="text-xs font-medium leading-normal tracking-tight">Ajustes</p>
+</a>
+</div>
+</nav>
+</div>
+</body></html>

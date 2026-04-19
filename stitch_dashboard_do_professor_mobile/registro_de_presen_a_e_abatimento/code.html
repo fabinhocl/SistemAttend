@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Registro de Presença e Abatimento</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Lexend', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-tab { color: #135bec; border-bottom: 2px solid #135bec; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Header Navigation -->
+<header class="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-3">
+<div class="flex items-center justify-between">
+<button class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+<span class="material-symbols-outlined align-middle">arrow_back_ios</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight">Registro de Presença</h1>
+<button class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+<span class="material-symbols-outlined align-middle">calendar_month</span>
+</button>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto pb-32">
+<!-- Class Info & Date Selector -->
+<div class="p-4 space-y-4">
+<div class="bg-white dark:bg-slate-900 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex justify-between items-center mb-4">
+<button class="material-symbols-outlined text-primary">chevron_left</button>
+<span class="font-semibold text-slate-700 dark:text-slate-300">Hoje, 24 de Outubro</span>
+<button class="material-symbols-outlined text-primary">chevron_right</button>
+</div>
+<div>
+<h2 class="text-xl font-bold text-slate-900 dark:text-slate-50">Aula de Matemática</h2>
+<div class="flex items-center gap-2 mt-1 text-slate-500 dark:text-slate-400 text-sm">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span>14:00 - 15:30</span>
+<span class="mx-1 text-slate-300">•</span>
+<span>Sala 402</span>
+</div>
+</div>
+</div>
+<!-- Attendance Stats Summary -->
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-primary/10 dark:bg-primary/20 p-3 rounded-lg border border-primary/20">
+<p class="text-xs text-primary font-medium uppercase tracking-wider">Presentes</p>
+<p class="text-2xl font-bold text-primary">12/15</p>
+</div>
+<div class="bg-slate-100 dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Faltas</p>
+<p class="text-2xl font-bold text-slate-700 dark:text-slate-300">3</p>
+</div>
+</div>
+<!-- Student List Title -->
+<div class="flex items-center justify-between pt-2">
+<h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Lista de Alunos</h3>
+<button class="text-primary text-sm font-medium">Selecionar Todos</button>
+</div>
+<!-- Students List -->
+<div class="space-y-3">
+<!-- Student 1 -->
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl flex items-center justify-between shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3">
+<div class="relative">
+<img alt="Ana Silva" class="w-12 h-12 rounded-full bg-slate-100" data-alt="Avatar portrait of a female student" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJl61jQs5th1SnvvATnIArmc7UzhDDUnLBjW7pV3gghKI_4MU2qhNgLgjejW6rTTqliqjXMbpm5tkrxeQ4pWInNmq4Tv5t1OTk1gRH3COJCJ6Y0TJPS4eHpQlygSHfqJtYmO4DrNywz8tjLHS4vWEEW1LiJv8CpOkrIAd1j41VubgJSB3NndLhfLSvNCvW_AweNViB3mRTZmFxk9RbS1loRX3GOaWwEGYSjJpGA47KLjUaoXwfvoHl1fwAfqBkgS3htqHsU1M24fnh"/>
+</div>
+<div>
+<p class="font-semibold text-slate-900 dark:text-slate-100">Ana Silva</p>
+<div class="flex items-center gap-1">
+<span class="text-xs text-slate-500 dark:text-slate-400">8/12 aulas restantes</span>
+<span class="text-[10px] bg-emerald-100 text-emerald-700 px-1 rounded dark:bg-emerald-900/30 dark:text-emerald-400">ATIVO</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden group-checked:block text-xs font-bold text-red-500 animate-bounce">-1 aula</div>
+<input checked="" class="w-6 h-6 rounded-lg text-primary border-slate-300 focus:ring-primary focus:ring-offset-0 transition-all cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<!-- Student 2 -->
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl flex items-center justify-between shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3">
+<img alt="Bruno Santos" class="w-12 h-12 rounded-full bg-slate-100" data-alt="Avatar portrait of a male student" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvFFD7xBIkkNSYcllXEdRP6UXlGmErIsw2MyLnnBj1wqpPQzZoAT5zXxeIpH84tEnv7tBZD_8S2xFm_307D_7DWdNqgs0PJesYLOSmT3b11HH9obHKtjhL89xqms1GOJ8W7fvBpGstlTuIZRzh94ZWESz7SIz9qIMiWjCs10YtkfHYdF3vXi2tVCAFX5NC2iZpNtKaNJtiEOKXrGnbOJKARzOqXIfbQxW19mWZbrbf4k2lysRDDpccTnwWaupTF9ZRBMyS74Snym2B"/>
+<div>
+<p class="font-semibold text-slate-900 dark:text-slate-100">Bruno Santos</p>
+<div class="flex items-center gap-1">
+<span class="text-xs text-slate-500 dark:text-slate-400">2/10 aulas restantes</span>
+<span class="text-[10px] bg-amber-100 text-amber-700 px-1 rounded dark:bg-amber-900/30 dark:text-amber-400">RENOVAR</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<input checked="" class="w-6 h-6 rounded-lg text-primary border-slate-300 focus:ring-primary focus:ring-offset-0 transition-all cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<!-- Student 3 -->
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl flex items-center justify-between shadow-sm border border-slate-100 dark:border-slate-800 opacity-75">
+<div class="flex items-center gap-3">
+<img alt="Carla Oliveira" class="w-12 h-12 rounded-full bg-slate-100" data-alt="Avatar portrait of a student" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKhsYbMyqvJ_KdG8qbInl2RGSMDLVBvuKCLmkK6Q3eLn7Gsc-geaSfp33TGfnCAVbVJjO-rK1_JB-Y5Q8sutm9VWoK80__e07Z27FG1--IC8ZCOYaExePjnXhjFzk2ykI3N2bGni8pEYmp2yo8itWd696mU8lVpLeO3fm9kvYLHXKTbfws2VRcFFhaQZzGyLq7hKZIyTIDI9pOFpgIdr5pmJJ8tYpqqtz-48Ek_FQPGiI16wObtdChcW8sR6X1t86vs1Q9aI0yWY7W"/>
+<div>
+<p class="font-semibold text-slate-900 dark:text-slate-100">Carla Oliveira</p>
+<div class="flex items-center gap-1">
+<span class="text-xs text-slate-500 dark:text-slate-400">12/12 aulas restantes</span>
+<span class="text-[10px] bg-emerald-100 text-emerald-700 px-1 rounded dark:bg-emerald-900/30 dark:text-emerald-400">NOVO</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<input class="w-6 h-6 rounded-lg text-primary border-slate-300 focus:ring-primary focus:ring-offset-0 transition-all cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<!-- Student 4 -->
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl flex items-center justify-between shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3">
+<img alt="Daniel Costa" class="w-12 h-12 rounded-full bg-slate-100" data-alt="Avatar portrait of a male student" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbbaHLZUm8GcTB5D-rzKqwg_AQsbv4AxAvrMpEROf61HDYUMUEZ7sal6NJcleCUsMzgI8dIiPmqiYOLuJIcmwieYRtdu066oCqeiyRBF_x149ODoEPadZeA0PDflpcBKkBRqI6g8Tx1SnOQGPpwGjSQhb9A76YCoZUkL2tkNVCDvO7FWPCtzAGXFuIxAilXojmwyXDYsTsYUmaEUycorc_8uv06wOX2g8vMW7yLPVQQS7d25n25XusxytuXRw1ICIPNoUaxgK1zifU"/>
+<div>
+<p class="font-semibold text-slate-900 dark:text-slate-100">Daniel Costa</p>
+<div class="flex items-center gap-1">
+<span class="text-xs text-slate-500 dark:text-slate-400">5/20 aulas restantes</span>
+<span class="text-[10px] bg-emerald-100 text-emerald-700 px-1 rounded dark:bg-emerald-900/30 dark:text-emerald-400">ATIVO</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<input checked="" class="w-6 h-6 rounded-lg text-primary border-slate-300 focus:ring-primary focus:ring-offset-0 transition-all cursor-pointer" type="checkbox"/>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Action Area -->
+<div class="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 p-4 pb-8 space-y-4">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-[0.98] flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">assignment_turned_in</span>
+            Confirmar Presença e Abater
+        </button>
+<!-- Bottom Tab Nav -->
+<nav class="flex justify-around items-center">
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Início</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="text-[10px] font-medium">Turmas</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">check_circle</span>
+<span class="text-[10px] font-medium">Presença</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Perfil</span>
+</a>
+</nav>
+</div>
+</body></html>

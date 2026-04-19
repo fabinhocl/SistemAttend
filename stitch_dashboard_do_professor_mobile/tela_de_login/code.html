@@ -1,0 +1,115 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Header Section -->
+<div class="relative flex h-auto w-full flex-col bg-white dark:bg-background-dark overflow-x-hidden">
+<div class="flex items-center bg-white dark:bg-background-dark p-4 pb-2 justify-between">
+<div class="text-slate-900 dark:text-slate-100 flex size-12 shrink-0 items-center justify-start">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-12" style="">Attend</h2>
+</div>
+<!-- Hero Illustration / Logo Area -->
+<div class="@container">
+<div class="@[480px]:px-4 @[480px]:py-3">
+<div class="w-full bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden bg-primary/10 @[480px]:rounded-lg min-h-[240px] relative" data-alt="Students studying together in a modern bright classroom setting" style="background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuCWehol3Z-u3d96FuhcIh_YxuGSnVIVXZIwjGJUt4M8tgC40Lw_-7xt1qqrSdPN3tk655-CaK6HAskXBMIiFkhtIQ46g7_pK6ebCXSSLv4ds6LyPoj0MQX4tXwxNRujzITVTEgeUeATEQ8fQvAopOqXbRl8jAghXbMpcugvfpXzh3ueCZXMKc1vtl_R3CCBNgG5OWivWxIAx_Z7Dr9ZYj5e3Eb4uD8WUk28B-nMIRGVufEF7JJLCSP-l5gpUdwW3CInephi7bQsccO5&quot;);">
+<div class="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent"></div>
+<div class="relative p-6">
+<div class="bg-white dark:bg-slate-900 w-14 h-14 rounded-xl flex items-center justify-center shadow-lg mb-2">
+<span class="material-symbols-outlined text-primary" style="font-size: 32px; font-variation-settings: &quot;FILL&quot; 1;">menu_book</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Welcome Text -->
+<div class="px-6 pt-8 pb-4">
+<h1 class="text-slate-900 dark:text-slate-100 tracking-tight text-3xl font-bold leading-tight" style="">Bem-vindo de volta</h1>
+<p class="text-slate-600 dark:text-slate-400 text-base font-normal mt-2" style="">Gerencie suas aulas e acompanhe o progresso com facilidade.</p>
+</div>
+<!-- Login Form -->
+<div class="flex flex-col gap-4 px-6 py-2">
+<label class="flex flex-col w-full" style="">
+<p class="text-slate-900 dark:text-slate-100 text-sm font-semibold leading-normal pb-2" style="">E-mail</p>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" style="font-size: 20px;">mail</span>
+<input class="form-input flex w-full rounded-xl text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 h-14 pl-12 pr-4 focus:ring-2 focus:ring-primary focus:border-primary placeholder:text-slate-400 font-normal transition-all" placeholder="seu@email.com" type="email">
+</div>
+</label>
+<label class="flex flex-col w-full mt-2" style="">
+<p class="text-slate-900 dark:text-slate-100 text-sm font-semibold leading-normal pb-2" style="">Senha</p>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" style="font-size: 20px;">lock</span>
+<input class="form-input flex w-full rounded-xl text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 h-14 pl-12 pr-12 focus:ring-2 focus:ring-primary focus:border-primary placeholder:text-slate-400 font-normal transition-all" placeholder="••••••••" type="password">
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary" style="">
+<span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+</button>
+</div>
+</label>
+<div class="flex justify-end">
+<a class="text-primary text-sm font-semibold hover:underline" href="#" style="">Esqueceu a senha?</a>
+</div>
+<button class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-colors mt-4 flex items-center justify-center gap-2" style="">
+<span class="" style="">Entrar</span>
+<span class="material-symbols-outlined" style="font-size: 20px;">login</span>
+</button>
+</div>
+<!-- Alternative Access -->
+<div class="px-6 py-8">
+<div class="relative flex items-center gap-4 mb-6">
+<div class="h-px bg-slate-200 dark:bg-slate-800 flex-1"></div>
+<span class="text-slate-400 text-xs font-bold uppercase tracking-widest" style="">Acesso Rápido</span>
+<div class="h-px bg-slate-200 dark:bg-slate-800 flex-1"></div>
+</div>
+<div class="flex flex-col gap-3">
+<p class="text-slate-600 dark:text-slate-400 text-sm text-center mb-1" style="">É aluno ou responsável?</p>
+<button class="w-full bg-primary/10 text-primary font-bold py-4 rounded-xl border border-primary/20 hover:bg-primary/20 transition-colors flex items-center justify-center gap-2" style="">
+<span class="material-symbols-outlined" style="font-size: 20px;">qr_code_scanner</span>
+<span class="" style="">Acessar via QR Code</span>
+</button>
+<button class="w-full bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-medium py-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 mt-2" style="">
+<span class="material-symbols-outlined text-slate-500" style="font-size: 20px;">info</span>
+<span class="text-sm" style="">Primeiro acesso? Clique aqui</span>
+</button>
+</div>
+</div>
+<!-- Footer Footer -->
+<div class="mt-auto py-6 px-6 text-center">
+<p class="text-slate-400 text-xs font-medium uppercase tracking-tighter" style="">© 2026 Infralyze Systems</p>
+</div>
+</div>
+</body></html>

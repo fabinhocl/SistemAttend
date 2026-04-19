@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Professor Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221610",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen pb-24">
+<!-- Header Section -->
+<header class="flex items-center bg-white dark:bg-primary/10 p-4 sticky top-0 z-10 border-b border-slate-200 dark:border-primary/20">
+<div class="flex size-12 shrink-0 items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary" data-alt="Foto de perfil sorridente de um professor" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBMg1kVYTQO8FewYOo2-E-yAIUSYwt3YgabEl39nTK1IFk2MVIoanXajoS46hBPRlruIC0Xg8aWNPTkly8I_qu9IZrPNcIg2Tn0JirDM0zRkNi8hovgmwurpE6pzoRIyHqWisZbqDhN6PopHH4VyDKtXjbpyzGy-K8ARcUMgSvJaWUJYcqGITD_EhCPtIuTsAUlFq-czqXK_IxIGKcZemHQaOzgo9F6BY4HTz5NakNsrixFtA938XDnmrNfRZxRKlQNc7n76kZORzJu");'></div>
+</div>
+<div class="flex flex-col ml-3 flex-1">
+<span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Bem-vindo de volta</span>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight">Olá, Prof. Ricardo</h2>
+</div>
+<div class="flex w-10 items-center justify-end">
+<button class="relative flex items-center justify-center rounded-xl h-10 w-10 bg-slate-100 dark:bg-primary/20 text-slate-600 dark:text-primary">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 flex h-2 w-2 rounded-full bg-primary"></span>
+</button>
+</div>
+</header>
+<!-- Summary Cards -->
+<div class="grid grid-cols-2 gap-3 p-4">
+<div class="col-span-2 flex flex-col gap-1 rounded-xl p-4 bg-primary text-white shadow-lg shadow-primary/20">
+<p class="text-white/80 text-sm font-medium">Receita do Mês</p>
+<div class="flex items-end justify-between">
+<p class="text-3xl font-bold">R$ 2.400</p>
+<span class="material-symbols-outlined text-4xl opacity-30">payments</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 rounded-xl p-4 bg-white dark:bg-primary/10 border border-slate-200 dark:border-primary/20">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium">Alunos Ativos</p>
+<p class="text-slate-900 dark:text-slate-100 text-2xl font-bold">15</p>
+</div>
+<div class="flex flex-col gap-1 rounded-xl p-4 bg-white dark:bg-primary/10 border border-slate-200 dark:border-primary/20">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium">Aulas Hoje</p>
+<p class="text-slate-900 dark:text-slate-100 text-2xl font-bold">4</p>
+</div>
+</div>
+<!-- Quick Actions Grid -->
+<div class="px-4 py-2">
+<h3 class="text-slate-900 dark:text-slate-100 text-sm font-bold uppercase tracking-wider mb-3">Ações Rápidas</h3>
+<div class="grid grid-cols-3 gap-3">
+<button class="flex flex-col items-center justify-center gap-2 p-3 bg-white dark:bg-primary/5 rounded-xl border border-slate-100 dark:border-primary/10">
+<div class="bg-primary/10 p-2 rounded-lg text-primary">
+<span class="material-symbols-outlined">person_add</span>
+</div>
+<span class="text-[10px] font-bold text-center">Novo Aluno</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 p-3 bg-white dark:bg-primary/5 rounded-xl border border-slate-100 dark:border-primary/10">
+<div class="bg-primary/10 p-2 rounded-lg text-primary">
+<span class="material-symbols-outlined">package_2</span>
+</div>
+<span class="text-[10px] font-bold text-center">Novo Pacote</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 p-3 bg-white dark:bg-primary/5 rounded-xl border border-slate-100 dark:border-primary/10">
+<div class="bg-primary/10 p-2 rounded-lg text-primary">
+<span class="material-symbols-outlined">event_note</span>
+</div>
+<span class="text-[10px] font-bold text-center">Agenda</span>
+</button>
+</div>
+</div>
+<!-- Financial Insight Indicator -->
+<div class="mx-4 mt-6 p-4 rounded-xl bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/20">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-slate-900 dark:text-slate-100 font-bold">Status Financeiro</h3>
+<span class="text-xs text-slate-500 font-medium">Este mês</span>
+</div>
+<div class="space-y-3">
+<div>
+<div class="flex justify-between text-xs mb-1 font-medium">
+<span class="text-slate-600 dark:text-slate-400">Recebido (R$ 1.800)</span>
+<span class="text-primary">75%</span>
+</div>
+<div class="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 75%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-xs mb-1 font-medium">
+<span class="text-slate-600 dark:text-slate-400">Pendente (R$ 600)</span>
+<span class="text-slate-400">25%</span>
+</div>
+<div class="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+<div class="bg-slate-400 h-full rounded-full" style="width: 25%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Today's Agenda -->
+<div class="px-4 pt-6">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-bold">Agenda de Hoje</h3>
+<a class="text-primary text-sm font-bold" href="#">Ver tudo</a>
+</div>
+<div class="space-y-3">
+<!-- Student 1 -->
+<div class="flex items-center gap-4 bg-white dark:bg-primary/5 p-3 rounded-xl border border-slate-100 dark:border-primary/10 shadow-sm">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12" data-alt="Foto de perfil do aluno João Silva" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuACAyBBuOz3-s0AsyAliyji6jHtFx41D0ni1UDtF9x8N2tblbRtHTRTG8ivSv3rmlLf5e1p62sr1IvOBJ__M89_Y_9FpuOumzf0s-_j6QZIS-tsAilQLvouxXUqFXSFwrVPmCIxjDnT0JZ-TnXTLcO-9XHH7EIApjlwN-Iu5cFLKsrLB_VAiiPm2i7dqPBA5Fj8EcmQZnsLHDXW8pLXO9Mb-cRVidf5HM1UY_HYmy0UWmCcdeovw-hx_88y96ILjl96uwmmrAfA9QN0");'></div>
+<div class="flex flex-col flex-1">
+<p class="text-slate-900 dark:text-slate-100 text-base font-bold leading-tight">João Silva</p>
+<div class="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<p class="text-xs font-medium">09:00 - 10:00</p>
+</div>
+</div>
+<button class="flex items-center justify-center rounded-lg h-9 w-9 bg-primary/10 text-primary border border-primary/20">
+<span class="material-symbols-outlined text-xl">check_circle</span>
+</button>
+</div>
+<!-- Student 2 -->
+<div class="flex items-center gap-4 bg-white dark:bg-primary/5 p-3 rounded-xl border border-slate-100 dark:border-primary/10 shadow-sm">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12" data-alt="Foto de perfil da aluna Maria Oliveira" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAmjsf-LWTRGqnBq_gIJDqy1oY0_GugAlvMoQ0GI7C1buY-uZni_tmw0vfO7Vo3jzT0RrS7mFkycfKlQf8epBn4w9JTNHRf8-SkpU02_r8dtxubvlqNRjXtQ3KXrq7OUs_4ejDjyxFJxs0RiOYlyqpJzW6Pp_PK7cWuFLNFlyaAOAMVEo_jOXrq4d2vqiL5I0G-tCADpf_x5dxmaW9a3q-kTT-jWibgCi1sYLc5RW39KIwU6M_J4XG2BHBDIupYsc7oUrsqQpVu75cj");'></div>
+<div class="flex flex-col flex-1">
+<p class="text-slate-900 dark:text-slate-100 text-base font-bold leading-tight">Maria Oliveira</p>
+<div class="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<p class="text-xs font-medium">10:30 - 11:30</p>
+</div>
+</div>
+<button class="flex items-center justify-center rounded-lg h-9 w-9 bg-primary/10 text-primary border border-primary/20">
+<span class="material-symbols-outlined text-xl">check_circle</span>
+</button>
+</div>
+<!-- Student 3 -->
+<div class="flex items-center gap-4 bg-white dark:bg-primary/5 p-3 rounded-xl border border-slate-100 dark:border-primary/10 shadow-sm opacity-80">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12" data-alt="Foto de perfil do aluno Pedro Santos" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDi8XjkUU3Qss8oGe-tCq8_BaJxlvyQ88zwiJxjYDC3_bnu-Dk_hcxU4eEpWHozYHGT5x7YElsnRk73-J_lWJ-WJ_SD-TQE_i8Va9cb4wlXw-f5eKMJdkHNMjQC8-8HW19LzK0M_FG57MPN_xbmydYMIxK2SBI_Vnmgxb-4X6eaEqyZlaaKjLmXXi51bvqMsMIhEQKatx9NwWzhnH8JdSTsHCnQrbxru32donTiV3qajZfuRG-q7zV7e8oAOmt5UKWX_QUQeOd-Be5d");'></div>
+<div class="flex flex-col flex-1">
+<p class="text-slate-900 dark:text-slate-100 text-base font-bold leading-tight">Pedro Santos</p>
+<div class="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<p class="text-xs font-medium">14:00 - 15:00</p>
+</div>
+</div>
+<button class="flex items-center justify-center rounded-lg h-9 w-9 bg-primary/10 text-primary border border-primary/20">
+<span class="material-symbols-outlined text-xl">check_circle</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-background-dark border-t border-slate-200 dark:border-primary/20 px-4 pb-6 pt-2 z-50">
+<div class="flex justify-between items-center max-w-md mx-auto">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1">dashboard</span>
+<p class="text-[10px] font-bold">Dashboard</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined text-2xl">group</span>
+<p class="text-[10px] font-medium">Alunos</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined text-2xl">calendar_month</span>
+<p class="text-[10px] font-medium">Agenda</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+<p class="text-[10px] font-medium">Financeiro</p>
+</a>
+</div>
+</nav>
+<!-- Floating Action Button -->
+<button class="fixed bottom-24 right-6 h-14 w-14 bg-primary text-white rounded-full shadow-2xl shadow-primary/40 flex items-center justify-center z-40 transform active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</body></html>

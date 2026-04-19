@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cadastro de Novo Contrato</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Lexend', sans-serif; }
+        .ios-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex h-auto min-h-screen w-full flex-col max-w-[430px] mx-auto bg-white dark:bg-slate-900 shadow-xl overflow-x-hidden">
+<!-- Header -->
+<div class="flex items-center bg-white dark:bg-slate-900 p-4 pb-2 justify-between border-b border-slate-100 dark:border-slate-800 sticky top-0 z-10">
+<div class="text-primary flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-primary/10 transition-colors cursor-pointer">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Novo Contrato</h2>
+</div>
+<div class="p-4 space-y-6 pb-32">
+<!-- Section Header -->
+<div class="space-y-1">
+<h3 class="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight tracking-tight">Detalhes do Contrato</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Preencha as informações para gerar o novo pacote de aulas.</p>
+</div>
+<!-- Form Fields -->
+<div class="space-y-4">
+<label class="flex flex-col gap-2">
+<span class="text-slate-700 dark:text-slate-300 text-sm font-semibold ml-1">Selecionar Aluno</span>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">person_search</span>
+<select class="form-input flex w-full rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-14 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none">
+<option value="">Busque pelo nome do aluno</option>
+<option value="1">Ana Beatriz Silva</option>
+<option value="2">Carlos Eduardo Souza</option>
+<option value="3">Mariana Oliveira</option>
+</select>
+</div>
+</label>
+<label class="flex flex-col gap-2">
+<span class="text-slate-700 dark:text-slate-300 text-sm font-semibold ml-1">Tipo de Pacote</span>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">package_2</span>
+<select class="form-input flex w-full rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-14 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none">
+<option value="">Selecione a recorrência</option>
+<option value="mensal">Mensal (Renovação Automática)</option>
+<option value="trimestral">Trimestral (Plano Fidelidade)</option>
+<option value="avulso">Pacote de 10 aulas</option>
+<option value="personalizado">Personalizado</option>
+</select>
+</div>
+</label>
+<div class="grid grid-cols-2 gap-4">
+<label class="flex flex-col gap-2">
+<span class="text-slate-700 dark:text-slate-300 text-sm font-semibold ml-1">Valor Total</span>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">R$</span>
+<input class="form-input flex w-full rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-14 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="0,00" type="text"/>
+</div>
+</label>
+<label class="flex flex-col gap-2">
+<span class="text-slate-700 dark:text-slate-300 text-sm font-semibold ml-1">Data de Início</span>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">calendar_today</span>
+<input class="form-input flex w-full rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-14 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" type="date"/>
+</div>
+</label>
+</div>
+<label class="flex flex-col gap-2">
+<span class="text-slate-700 dark:text-slate-300 text-sm font-semibold ml-1">Forma de Pagamento</span>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">payments</span>
+<select class="form-input flex w-full rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-14 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none">
+<option value="">Escolha como receber</option>
+<option value="pix">PIX</option>
+<option value="cartao">Cartão de Crédito</option>
+<option value="boleto">Boleto Bancário</option>
+<option value="dinheiro">Dinheiro</option>
+</select>
+</div>
+</label>
+</div>
+<!-- Summary Card -->
+<div class="bg-primary/5 dark:bg-primary/10 rounded-2xl p-4 border border-primary/10">
+<h4 class="text-primary font-bold text-sm uppercase tracking-wider mb-3">Resumo da Carga Horária</h4>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+<div>
+<p class="text-slate-500 dark:text-slate-400 text-xs">Total de Horas</p>
+<p class="text-slate-900 dark:text-slate-100 font-bold text-lg">40 Horas / Mês</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-slate-500 dark:text-slate-400 text-xs">Valor por Hora</p>
+<p class="text-slate-900 dark:text-slate-100 font-bold text-lg">R$ 85,00</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Footer Action -->
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 flex flex-col gap-3">
+<button class="w-full h-14 bg-primary text-white rounded-xl font-bold text-base shadow-lg shadow-primary/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+<span>Confirmar Contrato</span>
+<span class="material-symbols-outlined">check_circle</span>
+</button>
+<button class="w-full h-12 bg-transparent text-slate-500 dark:text-slate-400 rounded-xl font-medium text-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                Salvar como rascunho
+            </button>
+</div>
+</div>
+</body></html>

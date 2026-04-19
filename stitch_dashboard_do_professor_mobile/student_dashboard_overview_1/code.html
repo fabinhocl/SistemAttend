@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Painel do Aluno</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100">
+<div class="relative flex h-screen w-full flex-col overflow-hidden max-w-[430px] mx-auto bg-white dark:bg-background-dark border-x border-slate-200 dark:border-slate-800">
+<!-- Header -->
+<div class="flex items-center bg-white dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
+<div class="flex size-10 shrink-0 items-center">
+<div class="bg-primary/10 rounded-full p-1.5">
+<span class="material-symbols-outlined text-primary">school</span>
+</div>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center">Painel do Aluno</h2>
+<div class="flex w-10 items-center justify-end">
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto pb-24">
+<!-- Profile Summary -->
+<div class="flex p-4 @container">
+<div class="flex w-full flex-col gap-4 bg-primary/5 dark:bg-primary/10 p-5 rounded-xl border border-primary/10">
+<div class="flex gap-4 items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-20 w-20 border-2 border-white dark:border-slate-700 shadow-sm" data-alt="Close up portrait of a smiling high school student Alex Johnson" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDeuMgHmkW9vHdKBkUL9y3K-GtKviRHhse_ICeTwvDwd-v_zZjYIDI3IjOT7v4qFQG8HlWFRQ55UKP55KneT28zTEwE0Z5juVPPJbFr_0Thij_L04aO0xx8ItP3utOfhwVJiw20gUcE88sNCWhAOI8w5XMd1YmaCs5muBQVm47yAimkxWjmDEgqgW-cxs-7haazFyt87Thamk0dJ4DbebvSwfT8Z7oop2_ZYVYYY8bvjU4nIvQljNPWr1F9438Qjm5ksGorNlt2IERJ");'></div>
+<div class="flex flex-col justify-center">
+<p class="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight">Alex Johnson</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Grade 10 • Section B</p>
+<div class="mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/20 text-primary">
+                                ID: #88291
+                            </div>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Actions Grid -->
+<div class="px-4 py-2">
+<h3 class="text-slate-900 dark:text-slate-100 text-base font-bold mb-3">Ações Rápidas</h3>
+<div class="grid grid-cols-2 gap-3">
+<div class="flex flex-col gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 items-start shadow-sm hover:border-primary/50 transition-colors">
+<div class="text-primary bg-primary/10 p-2 rounded-lg">
+<span class="material-symbols-outlined">grade</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-sm font-bold">Notas</h2>
+</div>
+<div class="flex flex-col gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 items-start shadow-sm hover:border-primary/50 transition-colors">
+<div class="text-primary bg-primary/10 p-2 rounded-lg">
+<span class="material-symbols-outlined">event_available</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-sm font-bold">Frequência</h2>
+</div>
+<div class="flex flex-col gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 items-start shadow-sm hover:border-primary/50 transition-colors">
+<div class="text-primary bg-primary/10 p-2 rounded-lg">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-sm font-bold">Agenda</h2>
+</div>
+<div class="flex flex-col gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 items-start shadow-sm hover:border-primary/50 transition-colors">
+<div class="text-primary bg-primary/10 p-2 rounded-lg">
+<span class="material-symbols-outlined">menu_book</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-sm font-bold">Tarefas</h2>
+</div>
+</div>
+</div>
+<!-- Latest Announcements -->
+<div class="px-4 py-4">
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-slate-900 dark:text-slate-100 text-base font-bold">Últimos Comunicados</h3>
+<button class="text-primary text-xs font-semibold">Ver Tudo</button>
+</div>
+<div class="bg-primary p-4 rounded-xl text-white shadow-md relative overflow-hidden">
+<div class="relative z-10">
+<p class="text-xs font-medium opacity-80 uppercase tracking-wider mb-1">EVENTO ESCOLAR</p>
+<h4 class="text-lg font-bold mb-2">Feira de Ciências Anual 2024</h4>
+<p class="text-sm opacity-90 leading-relaxed mb-3">As inscrições para a próxima feira de ciências estão abertas. Envie suas propostas de projeto até sexta-feira.</p>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+<span class="text-xs">Oct 15 - Oct 17</span>
+</div>
+</div>
+<!-- Decorative background pattern -->
+<div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white/10 rounded-full"></div>
+<div class="absolute bottom-0 right-0 mr-4 mb-4 w-12 h-12 bg-white/5 rounded-full"></div>
+</div>
+</div>
+<!-- Performance Overview (Mini Bar Chart) -->
+<div class="px-4 py-4">
+<h3 class="text-slate-900 dark:text-slate-100 text-base font-bold mb-3">Visão Geral de Desempenho</h3>
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+<div class="flex items-end justify-between h-32 gap-3 px-2">
+<div class="flex flex-col items-center flex-1 gap-2">
+<div class="w-full bg-primary/20 rounded-t-lg h-24 relative overflow-hidden">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-lg h-[85%]"></div>
+</div>
+<span class="text-[10px] text-slate-500 font-medium">Math</span>
+</div>
+<div class="flex flex-col items-center flex-1 gap-2">
+<div class="w-full bg-primary/20 rounded-t-lg h-24 relative overflow-hidden">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-lg h-[70%]"></div>
+</div>
+<span class="text-[10px] text-slate-500 font-medium">Science</span>
+</div>
+<div class="flex flex-col items-center flex-1 gap-2">
+<div class="w-full bg-primary/20 rounded-t-lg h-24 relative overflow-hidden">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-lg h-[92%]"></div>
+</div>
+<span class="text-[10px] text-slate-500 font-medium">History</span>
+</div>
+<div class="flex flex-col items-center flex-1 gap-2">
+<div class="w-full bg-primary/20 rounded-t-lg h-24 relative overflow-hidden">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-lg h-[60%]"></div>
+</div>
+<span class="text-[10px] text-slate-500 font-medium">Art</span>
+</div>
+<div class="flex flex-col items-center flex-1 gap-2">
+<div class="w-full bg-primary/20 rounded-t-lg h-24 relative overflow-hidden">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-lg h-[78%]"></div>
+</div>
+<span class="text-[10px] text-slate-500 font-medium">English</span>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+<div class="flex items-center gap-1.5">
+<div class="size-2 rounded-full bg-primary"></div>
+<span class="text-xs text-slate-500">Average: 82%</span>
+</div>
+<div class="text-xs font-bold text-slate-900 dark:text-slate-100">Top 5% in Class</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] border-t border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-background-dark/90 backdrop-blur-md px-4 pb-6 pt-3 flex justify-between items-center z-20">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined !text-[26px] fill-[1]">home</span>
+<p class="text-[10px] font-bold">Início</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined !text-[26px]">chat_bubble</span>
+<p class="text-[10px] font-medium">Mensagens</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined !text-[26px]">calendar_month</span>
+<p class="text-[10px] font-medium">Eventos</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined !text-[26px]">person</span>
+<p class="text-[10px] font-medium">Perfil</p>
+</a>
+</div>
+</div>
+</body></html>
