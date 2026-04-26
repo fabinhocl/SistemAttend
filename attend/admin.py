@@ -41,9 +41,9 @@ class ClienteAdmin(admin.ModelAdmin):
 
 @admin.register(Profissional)
 class ProfissionalAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nome_exibicao', 'email', 'ativo')
+    list_display = ('id', 'nome_exibicao', 'email')
     search_fields = ['nome_exibicao']
-    list_filter = ['ativo']
+    list_filter = ['user']
 
 
 @admin.register(PacoteSessoes)

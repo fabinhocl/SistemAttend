@@ -1,11 +1,36 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import Cliente, PacoteSessoes, Profissional, Tenant, Sessao, Contrato, Fatura, Pagamento, Responsavel, User, Profile
-from attend.models import PortalCliente
+from .models import Cliente, PacoteSessoes, Profissional, Tenant, Sessao, Contrato, Fatura, Pagamento, Responsavel, User, Profile, PortalCliente, ProfissionalTenant
 from attend.services.portal_tokens import validar_token_portal_cliente
 
 User = get_user_model()
 
+class TenantOptionSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    nome = serializers.CharField()
+    plano = serializers.CharField()
+
+
+class MeSerializer(serializers.Serializer):
+    id = serializers.UUIDField(source='id')
+    email = serializers.EmailField(source='user.email')
+    nome_exibicao = serializers.CharField()
+    tenants = serializers.SerializerMethodField()
+
+    def get_tenants(self, obj):
+        memberships = ProfissionalTenant.objects.filter(
+            profissional=obj,
+            ativo=True
+        ).select_related('tenant')
+
+        return [
+            {
+                'id': item.tenant.id,
+                'nome': item.tenant.nome,
+                'plano': item.tenant.plano,
+            }
+            for item in memberships
+        ]
 
 class PortalClienteSerializer(serializers.ModelSerializer):
     class Meta:
@@ -77,7 +102,7 @@ class PortalClienteActivateSerializer(serializers.Serializer):
         return portal_cliente
 
 class ClienteSerializer(serializers.ModelSerializer):
-    responsavel_nome = serializers.CharField(
+    responsavel = serializers.CharField(
         source='responsavel.user.username', read_only=True
     )
 
@@ -85,8 +110,7 @@ class ClienteSerializer(serializers.ModelSerializer):
         model = Cliente
         fields = [
             'id', 'tenant', 'nome', 'data_nascimento', 'cpf', 'email', 'telefone',
-            'responsavel', 'responsavel_nome',
-            'observacoes', 'user', 'created_at',
+            'responsavel', 'observacoes', 'user', 'created_at',
         ]
         read_only_fields = ['id', 'tenant', 'created_at']
 
@@ -126,32 +150,175 @@ class ProfileFotoSerializer(serializers.ModelSerializer):
         return value
 
 
+class SessaoPreviewSerializer(serializers.Serializer):
+    numero = serializers.IntegerField(min_value=1)
+    status = serializers.ChoiceField(choices=['pendente', 'realizada', 'falta'])
+
+class ParcelaPreviewSerializer(serializers.Serializer):
+    numero = serializers.IntegerField(min_value=1)
+    status = serializers.ChoiceField(choices=['pendente', 'pago', 'atrasado'])
+    valor = serializers.DecimalField(max_digits=10, decimal_places=2)
+
+
 class PacoteSessoesSerializer(serializers.ModelSerializer):
     cliente_nome = serializers.CharField(source='cliente.nome', read_only=True)
     profissional_nome = serializers.CharField(source='profissional.nome_exibicao', read_only=True)
     sessoes_restantes = serializers.ReadOnlyField()
+    plano_tipo = serializers.CharField(read_only=True)
+
+    sessoes_preview = SessaoPreviewSerializer(many=True, required=False)
+    parcelas_preview = ParcelaPreviewSerializer(many=True, required=False)
 
     class Meta:
         model = PacoteSessoes
         fields = [
-            'id', 'tenant',
+            'id',
+            'tenant',
             'cliente', 'cliente_nome',
             'profissional', 'profissional_nome',
+            'plano_tipo',
             'descricao',
-            'qtd_sessoes', 'qtd_sessoes_usadas', 'sessoes_restantes',
-            'data_inicio', 'data_fim',
-            'valor_por_sessao', 'valor_total',
-            'qtd_parcelas', 'valor_parcela', 'dia_pagamento',
+            'qtd_sessoes',
+            'qtd_sessoes_usadas',
+            'sessoes_restantes',
+            'data_inicio',
+            'data_fim',
+            'valor_por_sessao',
+            'valor_total',
+            'qtd_parcelas',
+            'valor_parcela',
+            'dia_pagamento',
             'status',
+            'sessoes_preview',
+            'parcelas_preview',
             'created_at',
         ]
         read_only_fields = [
-            'id', 'tenant', 'profissional',
-            'qtd_sessoes_usadas', 'sessoes_restantes',
-            'valor_total', 'valor_parcela',
-            'status', 'created_at',
+            'id',
+            'tenant',
+            'profissional',
+            'plano_tipo',
+            'qtd_sessoes_usadas',
+            'sessoes_restantes',
+            'valor_total',
+            'valor_parcela',
+            'status',
+            'created_at',
         ]
 
+    def validate_dia_pagamento(self, value):
+        if value < 1 or value > 31:
+            raise serializers.ValidationError('O dia de pagamento deve estar entre 1 e 31.')
+        return value
+
+    def validate(self, attrs):
+        instance = getattr(self, 'instance', None)
+
+        plano_tipo = getattr(instance, 'plano_tipo', None)
+        if plano_tipo is None:
+            request = self.context.get('request')
+            tenant = getattr(request, 'tenant', None) if request else None
+            user = getattr(request, 'user', None) if request else None
+            if tenant is None and user is not None:
+                tenant = getattr(user, 'tenant', None)
+            plano_tipo = getattr(tenant, 'plano', 'free')
+
+        qtd_sessoes = attrs.get('qtd_sessoes', getattr(instance, 'qtd_sessoes', 0))
+        qtd_parcelas = attrs.get('qtd_parcelas', getattr(instance, 'qtd_parcelas', 0))
+        valor_por_sessao = attrs.get('valor_por_sessao', getattr(instance, 'valor_por_sessao', 0))
+        data_inicio = attrs.get('data_inicio', getattr(instance, 'data_inicio', None))
+        data_fim = attrs.get('data_fim', getattr(instance, 'data_fim', None))
+        sessoes_preview = attrs.get('sessoes_preview', getattr(instance, 'sessoes_preview', []))
+        parcelas_preview = attrs.get('parcelas_preview', getattr(instance, 'parcelas_preview', []))
+
+        if qtd_sessoes < 1:
+            raise serializers.ValidationError({
+                'qtd_sessoes': 'Informe pelo menos 1 sessão.'
+            })
+
+        if qtd_parcelas < 1:
+            raise serializers.ValidationError({
+                'qtd_parcelas': 'Informe pelo menos 1 parcela.'
+            })
+
+        if valor_por_sessao is None or valor_por_sessao < 0:
+            raise serializers.ValidationError({
+                'valor_por_sessao': 'Informe um valor por sessão válido.'
+            })
+
+        if data_inicio and data_fim and data_fim < data_inicio:
+            raise serializers.ValidationError({
+                'data_fim': 'A data final não pode ser menor que a data inicial.'
+            })
+
+        if plano_tipo in ['free', 'basico']:
+            if len(sessoes_preview) != qtd_sessoes:
+                raise serializers.ValidationError({
+                    'sessoes_preview': 'A quantidade de sessões no preview deve corresponder à quantidade de sessões.'
+                })
+
+            if len(parcelas_preview) != qtd_parcelas:
+                raise serializers.ValidationError({
+                    'parcelas_preview': 'A quantidade de parcelas no preview deve corresponder à quantidade de parcelas.'
+                })
+
+        return attrs
+
+    def _normalize_sessoes_preview(self, sessoes_preview):
+        normalized = []
+
+        for item in sessoes_preview:
+            normalized.append({
+                'numero': int(item.get('numero')),
+                'status': item.get('status'),
+            })
+
+        return normalized
+
+    def _normalize_parcelas_preview(self, parcelas_preview):
+        normalized = []
+
+        for item in parcelas_preview:
+            valor = item.get('valor', 0)
+
+            normalized.append({
+                'numero': int(item.get('numero')),
+                'status': item.get('status'),
+                'valor': float(valor) if valor is not None else 0.0,
+            })
+
+        return normalized
+
+    def create(self, validated_data):
+        sessoes_preview = validated_data.pop('sessoes_preview', [])
+        parcelas_preview = validated_data.pop('parcelas_preview', [])
+
+        instance = PacoteSessoes.objects.create(**validated_data)
+        instance.sessoes_preview = self._normalize_sessoes_preview(sessoes_preview)
+        instance.parcelas_preview = self._normalize_parcelas_preview(parcelas_preview)
+        instance.save()
+
+        return instance
+
+    def update(self, instance, validated_data):
+        sessoes_preview = validated_data.pop('sessoes_preview', None)
+        parcelas_preview = validated_data.pop('parcelas_preview', None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if sessoes_preview is not None:
+            instance.sessoes_preview = self._normalize_sessoes_preview(sessoes_preview)
+            instance.qtd_sessoes_usadas = sum(
+                1 for s in instance.sessoes_preview if s.get('status') == 'realizada'
+            )
+        
+        if parcelas_preview is not None:
+            instance.parcelas_preview = self._normalize_parcelas_preview(parcelas_preview)
+
+        instance.save()
+        return instance
+    
 
 class ContratoSerializer(serializers.ModelSerializer):
     cliente_nome = serializers.CharField(source='cliente.nome', read_only=True)
@@ -201,7 +368,7 @@ class SessaoSerializer(serializers.ModelSerializer):
 
 class FaturaSerializer(serializers.ModelSerializer):
     cliente_nome = serializers.CharField(source='cliente.nome', read_only=True)
-    responsavel_nome = serializers.CharField(source='responsavel.user.username', read_only=True)
+    responsavel = serializers.CharField(source='responsavel.user.username', read_only=True)
     pacote_descricao = serializers.CharField(source='pacote.descricao', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
 

@@ -43,11 +43,11 @@ class Tenant(models.Model):
     plano = models.CharField(
         max_length=20, 
         choices=[
-            ('free', 'Free'), 
-            ('pro', 'Pro'), 
-            ('enterprise', 'Enterprise')
+            ('basico', 'Básico'),
+            ('pro', 'Pro'),
+            ('premium', 'Premium'),
         ], 
-        default='free'
+        default='basico'
     )
     limite_clientes = models.PositiveIntegerField(default=10)
     data_inicio_plano = models.DateField()
@@ -117,21 +117,23 @@ class Profissional(models.Model):
     especialidade = models.CharField(max_length=200, blank=True)
     telefone = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
-    ativo = models.BooleanField(default=True)
+    foto = models.ImageField(upload_to='profissionais/', null=True, blank=True)
+    #ativo = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    
 
-    class Meta:
-        indexes = [models.Index(fields=['ativo'])]
-
+    
     def __str__(self):
         return self.nome_exibicao
 
 class ProfissionalTenant(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
     profissional = models.ForeignKey(Profissional, on_delete=models.CASCADE)
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
+    #ativo = models.BooleanField(default=True)
+    #papel = models.CharField(max_length=30, default='admin')
 
     class Meta:
-        unique_together = ('tenant', 'profissional')
+        unique_together = ('profissional', 'tenant')
 
 
 
@@ -175,7 +177,8 @@ class Cliente(models.Model):
 
     def __str__(self):
         return self.nome
-
+    
+    
 def avatar_upload_to(instance, filename):
     ext = filename.split('.')[-1].lower()
     return os.path.join('avatars', str(instance.user_id), f'{uuid.uuid4().hex}.{ext}')
@@ -240,6 +243,12 @@ class Profile(models.Model):
 class PacoteSessoes(models.Model):
     """Pacote de sessões do cliente"""
 
+    PLANO_CHOICES = (
+        ('basico', 'Básico'),
+        ('pro', 'Pro'),
+        ('premium', 'Premium'),
+    )
+    plano_tipo = models.CharField(max_length=20, choices=PLANO_CHOICES, default='basico')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='pacotes')
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='pacotes')
@@ -250,7 +259,7 @@ class PacoteSessoes(models.Model):
     data_fim = models.DateField(null=True, blank=True)
 
     # Sessões / financeiro
-    qtd_sessoes = models.PositiveIntegerField()  # QUANTAS SESSÕES?
+    qtd_sessoes = models.PositiveIntegerField(default=1)  # QUANTAS SESSÕES?
     valor_por_sessao = models.DecimalField(max_digits=10, decimal_places=2)  # VALOR POR SESSÃO
     valor_total = models.DecimalField(max_digits=10, decimal_places=2)       # TOTAL
     qtd_parcelas = models.PositiveIntegerField(default=1)                    # PARCELAS
@@ -270,7 +279,12 @@ class PacoteSessoes(models.Model):
         ],
         default='ativo',
     )
+    sessoes_preview = models.JSONField(default=list, blank=True)
+    parcelas_preview = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Pacote {self.id} - {self.cliente}'
 
     def save(self, *args, **kwargs):
         # cálculos financeiros

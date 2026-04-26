@@ -1,4 +1,5 @@
 from django.http import HttpResponse
+from django.db import transaction
 from django.conf import settings
 from django.core.mail import send_mail
 from django.contrib.auth import authenticate
@@ -6,8 +7,8 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.text import slugify
 from datetime import date, timedelta
-from rest_framework import viewsets, status, permissions
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework import serializers, viewsets, status, permissions
+from rest_framework.decorators import api_view, permission_classes, action, parser_classes
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -15,10 +16,13 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import ValidationError
 
-from attend.models import Tenant, PacoteSessoes, Sessao, Fatura, Pagamento, Contrato, User, Profissional, Responsavel, Cliente, Profile, PortalCliente
-from attend.serializers import ClienteSerializer, PacoteSessoesSerializer, SessaoSerializer, FaturaSerializer, PagamentoSerializer, ContratoSerializer, ProfissionalSerializer, ResponsavelSerializer, ProfileFotoSerializer, PortalClienteActivateSerializer, PortalClienteSerializer
+from attend.models import Tenant, PacoteSessoes, Sessao, Fatura, Pagamento, Contrato, User, Profissional, Responsavel, Cliente, Profile, PortalCliente, ProfissionalTenant
+from attend.serializers import ClienteSerializer, PacoteSessoesSerializer, SessaoSerializer, FaturaSerializer, PagamentoSerializer, ContratoSerializer, ProfissionalSerializer, ResponsavelSerializer, ProfileFotoSerializer, PortalClienteActivateSerializer, PortalClienteSerializer, MeSerializer
 from attend.services.portal_tokens import gerar_token_portal_cliente, validar_token_portal_cliente
 from attend.permissions import IsAuthenticatedPortalCliente
+from attend.views_base import BaseTenantViewSet
+from attend.services.tenant_rules import validar_multiplos_profissionais
+
 
 
 
@@ -109,40 +113,46 @@ def register_view(request):
         slug = f"{base_slug}-{counter}"
         counter += 1
 
-    # 1) cria Tenant (plano free)
-    tenant = Tenant.objects.create(
-        slug=slug,
-        nome_fantasia=nome_fantasia,
-        documento=documento,
-        email=email,
-        telefone=telefone,
-        plano='free',
-        limite_clientes=10,
-        data_inicio_plano=date.today(),
-        data_fim_plano=date.today() + timedelta(days=365),
-        ativo=True,
-    )
+    # 1) cria Tenant (plano basico por padrão)
+    with transaction.atomic():
+        tenant = Tenant.objects.create(
+            slug=slug,
+            nome_fantasia=nome_fantasia,
+            documento=documento,
+            email=email,
+            telefone=telefone,
+            plano='basico',
+            limite_clientes=10,
+            data_inicio_plano=date.today(),
+            data_fim_plano=date.today() + timedelta(days=365),
+            ativo=True,
+        )
 
-    # 2) cria User vinculado ao tenant
-    user = User.objects.create_user(
-        email=email,
-        password=password,
-        first_name=nome_exibicao or nome_fantasia,   # campo nome do seu User customizado
-        tenant=tenant,
-        tipo_usuario='Profissional',
-    )
+        # 2) cria User vinculado ao tenant
+        user = User.objects.create_user(
+            email=email,
+            password=password,
+            first_name=nome_exibicao or nome_fantasia,   # campo nome do seu User customizado
+            tenant=tenant,
+            tipo_usuario='Profissional',
+        )
 
-    # 3) cria Profissional vinculado ao user e tenant
-    profissional = Profissional.objects.create(
-        user=user,
-        nome_exibicao=nome_exibicao or nome_fantasia,
-        telefone=telefone,
-        email=email,
-        ativo=True,
-    )
-    profissional.tenants.add(tenant)
+        # 3) cria Profissional vinculado ao user e tenant
+        profissional = Profissional.objects.create(
+            user=user,
+            nome_exibicao=nome_exibicao or nome_fantasia,
+            telefone=telefone,
+            email=email,
+            ativo=True,
+        )
+        profissional.tenants.add(tenant)
 
-    # 4) retorna tokens JWT para login automático
+        ProfissionalTenant.objects.get_or_create(
+            profissional=profissional,
+            tenant=tenant,
+        )
+
+        # 4) retorna tokens JWT para login automático
     refresh = RefreshToken.for_user(user)
 
     return Response({
@@ -172,6 +182,7 @@ def ping_protected(request):
 
 def healthcheck(request):
     return HttpResponse("OK")
+
 
 class PortalClientePublicView(APIView):
     authentication_classes = []
@@ -344,39 +355,86 @@ def validar_limite_profissionais(tenant):
             "detail": f"Seu plano permite até {plano.max_profissionais} profissionais ativos."
         })
 
-class clienteViewSet(viewsets.ModelViewSet):
-    """
-    CRUD de clientes filtrado por tenant.
-    """
+class ClienteViewSet(BaseTenantViewSet):
+    queryset = Cliente.objects.all()
     serializer_class = ClienteSerializer
-    permission_classes = [IsAuthenticated]
-    lookup_field = 'id'
-    filterset_fields = ['nome', 'data_nascimento']
-    search_fields = ['nome']
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        tenant = getattr(self.request, 'tenant', None)
-        qs = Cliente.objects.all()
-        if tenant is not None:
-            qs = qs.filter(tenant=tenant)
-        return qs
+        try:
+            print('--- CLIENTES get_queryset ---')
+            print('REQUEST USER:', self.request.user)
+
+            tenant = self.get_tenant()
+            print('TENANT RESOLVIDO:', tenant, tenant.id)
+
+            qs = Cliente.objects.filter(tenant=tenant).order_by('nome')
+            print('QS OK / TOTAL:', qs.count())
+
+            return qs
+        except Exception as e:
+            print('ERRO get_queryset CLIENTES:', repr(e))
+            raise
 
     def perform_create(self, serializer):
-        tenant = getattr(self.request, 'tenant', None)
-        
-        print("TENANT:", tenant)
-        print("VALIDATED DATA:", serializer.validated_data)
+        try:
+            tenant = self.get_tenant()
+            print('--- CLIENTES perform_create ---')
+            print('TENANT RESOLVIDO:', tenant, tenant.id)
+            serializer.save(tenant=tenant)
+        except Exception as e:
+            print('ERRO perform_create CLIENTES:', repr(e))
+            raise
 
-        instance = serializer.save(tenant=tenant)
+    def perform_update(self, serializer):
+        try:
+            tenant = self.get_tenant()
+            print('--- CLIENTES perform_update ---')
+            print('TENANT RESOLVIDO:', tenant, tenant.id)
+            serializer.save(tenant=tenant)
+        except Exception as e:
+            print('ERRO perform_update CLIENTES:', repr(e))
+            raise
 
-        print("SALVO:", {
-            "id": str(instance.id),
-            "nome": instance.nome,
-            "email": instance.email,
-            "telefone": instance.telefone,
-            "tenant": str(instance.tenant_id) if instance.tenant_id else None,
-        })
+class MyProfissionalFotoUploadView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
+    def post(self, request):
+        profissional = getattr(request.user, 'perfil_profissional', None)
+        if not profissional:
+            return Response(
+                {"detail": "Perfil do profissional não encontrado."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        foto = request.FILES.get('foto')
+        if not foto:
+            return Response(
+                {"detail": "Arquivo de foto não enviado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        profissional.foto = foto
+        profissional.save(update_fields=['foto'])
+
+        foto_url = request.build_absolute_uri(profissional.foto.url) if profissional.foto else None
+        return Response({'foto': foto_url, 'foto_url': foto_url}, status=status.HTTP_200_OK)
+
+    def delete(self, request):
+        profissional = getattr(request.user, 'perfil_profissional', None)
+        if not profissional:
+            return Response(
+                {"detail": "Perfil do profissional não encontrado."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if profissional.foto:
+            profissional.foto.delete(save=False)
+
+        profissional.foto = None
+        profissional.save(update_fields=['foto'])
+        return Response({'foto': None, 'foto_url': None}, status=status.HTTP_200_OK)
 
 class MyFotoUploadView(APIView):
     permission_classes = [IsAuthenticated]
@@ -417,119 +475,100 @@ class MyFotoUploadView(APIView):
         profile.save(update_fields=['foto'])
         return Response({'foto': None, 'foto_url': None}, status=status.HTTP_200_OK)
     
-class PacoteSessoesViewSet(viewsets.ModelViewSet):
+class PacoteSessoesViewSet(BaseTenantViewSet):
     queryset = PacoteSessoes.objects.all()
     serializer_class = PacoteSessoesSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
+    def get_profissional_no_tenant(self):
+        tenant = self.get_tenant()
         user = self.request.user
-        tenant = getattr(self.request, 'tenant', None) or getattr(user, 'tenant', None)
-        qs = super().get_queryset()
-        if tenant is not None:
-            qs = qs.filter(tenant=tenant)
+
+        profissional = Profissional.objects.filter(user=user).first()
+        if not profissional:
+            raise ValidationError('Profissional não encontrado para o usuário atual.')
+
+        membership = ProfissionalTenant.objects.filter(
+            profissional=profissional,
+            tenant=tenant,
+            
+        ).first()
+
+        if not membership:
+            raise ValidationError('O profissional não possui acesso ao tenant selecionado.')
+
+        return profissional
+    
+    def get_queryset(self):
+        tenant = self.get_tenant()
+        qs = super().get_queryset().filter(tenant=tenant).select_related('cliente', 'profissional')
 
         cliente_id = self.request.query_params.get('cliente')
         if cliente_id:
             qs = qs.filter(cliente_id=cliente_id)
-        return qs
+
+        status = self.request.query_params.get('status')
+        if status:
+            qs = qs.filter(status=status)
+
+        return qs.order_by('-created_at')
 
     def perform_create(self, serializer):
-        user = self.request.user
+        tenant = self.get_tenant()
+        profissional = self.get_profissional_no_tenant()
 
-        tenant = getattr(self.request, 'tenant', None)
-        if tenant is None:
-            tenant = getattr(user, 'tenant', None)
+        plano_tenant = getattr(tenant, 'plano', 'free')
+        plano_pacote = 'basico' if plano_tenant == 'free' else plano_tenant
 
-        if tenant is None:
-            raise ValidationError('Tenant não encontrado para o usuário atual.')
+        serializer.save(
+            tenant=tenant,
+            profissional=profissional,
+            plano_tipo=plano_pacote
+        )
 
-        try:
-            profissional = Profissional.objects.get(user=user)
-        except Profissional.DoesNotExist:
-            raise ValidationError('Nenhum profissional vinculado ao usuário atual.')
+    def perform_update(self, serializer):
+        tenant = self.get_tenant()
+        profissional = self.get_profissional_no_tenant()
 
-        serializer.save(tenant=tenant, profissional=profissional)
+        serializer.save(
+            tenant=tenant,
+            profissional=profissional
+        )
         
-class SessaoViewSet(viewsets.ModelViewSet):
+class SessaoViewSet(BaseTenantViewSet):
     queryset = Sessao.objects.all()
     serializer_class = SessaoSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
-        tenant = getattr(self.request, 'tenant', None) or getattr(user, 'tenant', None)
-        qs = super().get_queryset()
-        if tenant:
-            qs = qs.filter(tenant=tenant)
+        tenant = self.get_tenant()
+        qs = super().get_queryset().filter(tenant=tenant).select_related(
+            'cliente', 'profissional', 'pacote'
+        )
+
         cliente_id = self.request.query_params.get('cliente')
         if cliente_id:
             qs = qs.filter(cliente_id=cliente_id)
+
         pacote_id = self.request.query_params.get('pacote')
         if pacote_id:
             qs = qs.filter(pacote_id=pacote_id)
-        return qs
+
+        data_inicio = self.request.query_params.get('data_inicio')
+        if data_inicio:
+            qs = qs.filter(data_hora_inicio__date=data_inicio)
+
+        status = self.request.query_params.get('status')
+        if status:
+            qs = qs.filter(status=status)
+
+        return qs.order_by('data_hora_inicio')
 
     def perform_create(self, serializer):
-        user = self.request.user
-        tenant = getattr(self.request, 'tenant', None) or getattr(user, 'tenant', None)
-        if not tenant:
-            raise ValidationError('Tenant não encontrado.')
-        try:
-            profissional = Profissional.objects.get(user=user)
-        except Profissional.DoesNotExist:
-            raise ValidationError('Nenhum profissional vinculado ao usuário.')
-        serializer.save(tenant=tenant, profissional=profissional)
+        serializer.save(tenant=self.get_tenant())
 
-    @action(detail=True, methods=['post'])
-    def dar_baixa(self, request, pk=None):
-        """
-        Marca a sessão como realizada e incrementa qtd_sessoes_usadas no pacote.
-        POST /api/v1/sessoes/{id}/dar_baixa/
-        """
-        sessao = self.get_object()
-        if sessao.status == 'realizada':
-            return Response(
-                {'detail': 'Sessão já está marcada como realizada.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        # usa o método do model que já atualiza o pacote
-        sessao.dar_baixa()
-        return Response(
-            SessaoSerializer(sessao).data,
-            status=status.HTTP_200_OK
-        )
-
-    @action(detail=True, methods=['post'])
-    def remarcar(self, request, pk=None):
-        """
-        Remarcar a sessão para nova data/hora.
-        POST /api/v1/sessoes/{id}/remarcar/
-        Body: { "data_hora_inicio": "2026-03-10T14:00:00", "data_hora_fim": "2026-03-10T15:00:00" }
-        """
-        sessao = self.get_object()
-        data_inicio = request.data.get('data_hora_inicio')
-        data_fim = request.data.get('data_hora_fim')
-
-        if not data_inicio or not data_fim:
-            return Response(
-                {'detail': 'data_hora_inicio e data_hora_fim são obrigatórios.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if sessao.status in ['realizada', 'cancelada']:
-            return Response(
-                {'detail': f'Não é possível remarcar uma sessão com status "{sessao.status}".'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # usa o método do model que cria nova sessão e marca esta como remarcada
-        sessao.remarcar(data_inicio, data_fim)
-        return Response(
-            {'detail': 'Sessão remarcada com sucesso.'},
-            status=status.HTTP_200_OK
-        )
-
+    def perform_update(self, serializer):
+        serializer.save(tenant=self.get_tenant())
 
 class FaturaViewSet(viewsets.ModelViewSet):
     """
@@ -671,6 +710,37 @@ class ProfissionalViewSet(viewsets.ModelViewSet):
 
         serializer.save(tenant=tenant)
 
+class VincularProfissionalTenantView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        tenant = getattr(request, 'tenant', None)
+        if tenant is None:
+            raise ValidationError('Tenant ativo não encontrado na requisição.')
+
+        profissional_id = request.data.get('profissional_id')
+        if not profissional_id:
+            raise ValidationError({'profissional_id': 'Informe o profissional.'})
+
+        validar_multiplos_profissionais(tenant)
+
+        profissional = Profissional.objects.filter(id=profissional_id).first()
+        if not profissional:
+            raise ValidationError('Profissional não encontrado.')
+
+        vinculo, created = ProfissionalTenant.objects.get_or_create(
+            profissional=profissional,
+            tenant=tenant,
+            defaults={'ativo': True}
+        )
+
+        if not created and not vinculo.ativo:
+            vinculo.ativo = True
+            vinculo.save()
+
+        return Response({
+            'detail': 'Profissional vinculado ao tenant com sucesso.'
+        })
 
 class ResponsavelViewSet(viewsets.ModelViewSet):
     """
@@ -699,23 +769,62 @@ class ResponsavelViewSet(viewsets.ModelViewSet):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def me_view(request):
-    """Retorna dados do usuário logado"""
     user = request.user
-    nome = user.first_name or user.email.split('@')[0]
-    foto = None
-    
-    try:
-        profissional = Profissional.objects.get(user=user)
-        nome = profissional.nome_exibicao
-        # foto = profissional.foto.url if hasattr(profissional, 'foto') and profissional.foto else None
-    except Profissional.DoesNotExist:
-        pass
+    profissional = getattr(user, 'perfil_profissional', None)
+    tenant = getattr(user, 'tenant', None)
+
+    tenants = []
+    if profissional:
+        tenants = [
+            {
+                'id': str(t.id),
+                'nome_fantasia': t.nome_fantasia,
+                'slug': t.slug,
+                'plano': t.plano,
+            }
+            for t in profissional.tenants.filter(ativo=True)
+        ]
+    foto_url = None
+    if profissional and profissional.foto:
+        foto_url = request.build_absolute_uri(profissional.foto.url)
+    elif getattr(user, 'profile', None) and user.profile.foto:
+        foto_url = request.build_absolute_uri(user.profile.foto.url)
+
 
     return Response({
         'id': str(user.id),
         'email': user.email,
-        'nome': nome,
-        'foto': foto,
         'tipo_usuario': user.tipo_usuario,
-        'tenant_id': str(user.tenant.id) if user.tenant else None,
+        'nome': profissional.nome_exibicao if profissional else user.first_name,
+        'user_nome': user.first_name,
+        'tenant_id': str(tenant.id) if tenant else None,
+        'tenant_nome': tenant.nome_fantasia if tenant else None,
+        'foto': foto_url,
+        'tenants': tenants,
+        'profissional': {
+            'id': str(profissional.id),
+            'nome_exibicao': profissional.nome_exibicao,
+            'email': profissional.email,
+            'telefone': profissional.telefone,
+            'foto': foto_url,
+        } if profissional else None,
+        
     })
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        refresh_token = request.data.get('refresh_token')
+        if not refresh_token:
+            return Response(
+                {'detail': 'refresh_token é obrigatório.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({'detail': 'Logout realizado com sucesso.'}, status=status.HTTP_200_OK)
+        except Exception:
+            return Response({'detail': 'Token inválido.'}, status=status.HTTP_400_BAD_REQUEST)

@@ -1,25 +1,25 @@
-# attend/middleware.py
+from django.utils.deprecation import MiddlewareMixin
+from django.http import JsonResponse, Http404
+from django.contrib.auth.models import AnonymousUser
 
-from django.http import Http404
-from .models import Tenant
+from attend.models import Tenant, Profissional, ProfissionalTenant
 
-class TenantMiddleware:
-    """
-    Middleware simples para carregar o tenant com base no host.
-    Para desenvolvimento local, podemos simplesmente pegar um tenant fixo
-    ou ignorar se não existir.
-    """
-    def __init__(self, get_response):
-        self.get_response = get_response
 
-    def __call__(self, request):
-        # Para desenvolvimento: usa o primeiro tenant como padrão.
-        tenant = None
-        try:
-            tenant = Tenant.objects.first()
-        except Tenant.DoesNotExist:
-            tenant = None
+class TenantMiddleware(MiddlewareMixin):
+    #HEADER_NAME = 'HTTP_X_TENANT_ID'
 
-        request.tenant = tenant
-        response = self.get_response(request)
-        return response
+    def process_request(self, request):
+        request.tenant = None
+
+        user = getattr(request, 'user', None)
+        if not user or isinstance(user, AnonymousUser) or not user.is_authenticated:
+            return None
+
+        if hasattr(user, 'tenant') and user.tenant:
+            request.tenant = user.tenant
+            return None
+
+        return None
+
+        
+#OBS: quando for incluir o multi tenant verificar as últimas alterções do dia 25/04/2026 as 14:28

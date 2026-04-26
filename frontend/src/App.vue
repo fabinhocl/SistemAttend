@@ -3,6 +3,14 @@ import { ref, onMounted, watch, computed } from 'vue';
 import api from "./services/api";
 import { uploadFoto } from "./api/profile";
 import axios from 'axios';
+import TenantSwitcher from '@/components/TenantSwitcher.vue'
+import { useRoute } from 'vue-router'
+import {
+  setAvailableTenants,
+  setActiveTenantId,
+  getAvailableTenants,
+  getActiveTenant
+} from "./services/tenantSession";
 import { 
   LayoutDashboard, 
   Users, 
@@ -87,14 +95,17 @@ async function handleRegister() {
     })
 
     // salva tokens e já entra no dashboard
-    localStorage.setItem('accessToken', data.access)
+    localStorage.setItem('access_token', data.access)
     localStorage.setItem('refreshToken', data.refresh)
 
+    isAuthenticated.value = true
     registerSuccess.value = true
 
     setTimeout(() => {
       registerSuccess.value = false
       currentScreen.value = 'dashboard'
+      loadPerfil()
+      loadDashboard()
       loadPackages()
     }, 1500)
 
@@ -122,6 +133,22 @@ const loginError = ref('');
 const API_URL = 'http://127.0.0.1:8000/api/v1';
 
 
+const route = useRoute()
+const hasToken = computed(() => !!localStorage.getItem('access_token'))
+const showTenantSwitcher = computed(() => {
+  return hasToken.value && route.path !== '/login'
+})
+
+async function loadMe() {
+  const token = localStorage.getItem('access_token')
+  if (!token) return
+
+  const response = await api.get('/me/')
+  return response.data
+}
+
+
+
 // LOGIN HANDLER
 const handleLogin = async () => {
   if (!loginForm.value.email || !loginForm.value.password) {
@@ -140,31 +167,266 @@ const handleLogin = async () => {
 
   // se chegou aqui, login OK: guarda tokens e troca de tela
     const { access, refresh } = response.data;
-  // exemplo:
-    localStorage.setItem('accessToken', access);
+    localStorage.setItem('access_token', access);
     localStorage.setItem('refreshToken', refresh);
-    await loadPerfil();
-    currentScreen.value = 'dashboard';
-    loginError.value = '';
+    
+    isAuthenticated.value = true
+    
+    await loadPerfil()
+
+    currentScreen.value = 'dashboard'
+
+    await fetchClients()
+    await loadPackages()
+    await loadDashboard()
   } catch (error: any) {
-    loginError.value = 'Erro ao fazer login. Verifique suas credenciais.';
+    console.error(error)
+    loginError.value =
+      error?.response?.data?.detail || 'Erro ao fazer login. Verifique suas credenciais.'
   } finally {
-    loginLoading.value = false;
+    loginLoading.value = false
   }
-};
+}
+
+// bootstrap para carregar dados do usuário logado e tenants disponíveis
+async function bootstrapAuthenticatedUser() {
+  const response = await api.get('/me/')
+  const me = response.data
+
+  const tenants = me.tenants || []
+  setAvailableTenants(tenants)
+
+  if (tenants.length === 1) {
+    setActiveTenantId(tenants[0].id)
+  }
+}
+
+const tenants = computed(() => getAvailableTenants())
+const activeTenant = computed(() => getActiveTenant())
+const isPremiumTenant = computed(() => activeTenant.value?.plano === 'premium')
+const selectedTenantId = ref(getActiveTenant()?.id || '')
+
+function changeTenant() {
+  setActiveTenantId(selectedTenantId.value)
+  window.location.reload()
+}
+
+// estado do tenant/profissional logado (para controle de planos e features)
+
+type TenantPlan = 'free' | 'basico' | 'pro' | 'premium'
+
+const tenantPlan = ref<TenantPlan>('free')
+
+const planoAtualLabel = computed(() => {
+  if (tenantPlan.value === 'pro') return 'Plano atual: Pro'
+  if (tenantPlan.value === 'premium') return 'Plano atual: Premium'
+  return 'Plano atual: Básico'
+})
+
+const tenantisPlanoBasico = computed(() => ['free', 'basico'].includes(String(tenantPlan.value || '').toLowerCase()))
+const tenantIsPlanoAvancado = computed(() => ['pro', 'premium'].includes(String(tenantPlan.value || '').toLowerCase()))
 
 
+// upload de foto de perfil
 const fileInput = ref<HTMLInputElement | null>(null)
 const isUploading = ref(false)
 const errorMessage = ref('')
 
+
 // Perfil do usuário logado
-const perfilUsuario = ref({
+interface PerfilProfissional {
+  id: string | null
+  nome_exibicao: string
+  email: string
+  telefone: string
+  foto: string | null
+}
+
+interface TenantOption {
+  id: string
+  nome_fantasia: string
+  slug: string
+  plano: string
+}
+
+interface PerfilUsuario {
+  nome: string
+  user_nome: string
+  email: string
+  foto: string | null
+  tipo_usuario: string
+  tenant_id: string | null
+  tenant_nome: string
+  tenants: TenantOption[]
+  profissional: PerfilProfissional | null
+}
+
+const perfilUsuario = ref<PerfilUsuario>({
   nome: 'Profissional',
+  user_nome: '',
   email: '',
-  foto: null as string | null,
+  foto: null,
   tipo_usuario: '',
+  tenant_id: null,
+  tenant_nome: '',
+  tenants: [],
+  profissional: null,
 })
+
+//Menu Avatar
+const openAccountSheet = ref(false)
+const uploadingPhoto = ref(false)
+
+// nome do profissional logado
+const nomeProfissional = computed(() => {
+  return (
+    perfilUsuario.value.profissional?.nome_exibicao ||
+    perfilUsuario.value.nome ||
+    perfilUsuario.value.user_nome ||
+    perfilUsuario.value.email?.split('@')[0] ||
+    'Profissional'
+  )
+})
+
+const fotoProfissional = computed(() => {
+  return (
+    perfilUsuario.value.profissional?.foto ||
+    perfilUsuario.value.foto ||
+    null
+  )
+})
+
+// Iniciais e Foto Perfil Usuário
+const iniciaisProfissional = computed(() => {
+  const nome = nomeProfissional.value?.trim() || 'Profissional'
+  const partes = nome.split(' ').filter(Boolean)
+  
+  if (partes.length === 1) {
+    return partes[0].slice(0, 2).toUpperCase()
+  }
+  
+  return `${partes[0][0] ?? ''}${partes[1][0] ?? ''}`.toUpperCase()
+})
+
+async function loadPerfil() {
+  try {
+    const { data } = await api.get('/me/')
+
+    perfilUsuario.value = {
+      nome: data.nome ?? 'Profissional',
+      user_nome: data.user_nome ?? '',
+      email: data.email ?? '',
+      foto: data.foto ?? null,
+      tipo_usuario: data.tipo_usuario ?? '',
+      tenant_id: data.tenant_id ?? null,
+      tenant_nome: data.tenant_nome ?? '',
+      tenants: data.tenants ?? [],
+      profissional: data.profissional ?? null,
+    }
+
+    setAvailableTenants(data.tenants || [])
+
+    if (data.tenant_id) {
+      setActiveTenantId(data.tenant_id)
+    } else if (data.tenants?.length === 1) {
+      setActiveTenantId(data.tenants[0].id)
+    }
+  } catch (error) {
+    console.error('Erro ao carregar perfil:', error)
+  }
+}
+
+async function onSelectProfilePhoto(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+
+  const formData = new FormData()
+  formData.append('foto', file)
+
+  try {
+    uploadingPhoto.value = true
+
+    await api.post('/me/profissional/foto/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+
+    await loadPerfil()
+  } catch (error: any) {
+    console.error('Erro ao enviar foto:', error)
+    console.error('response data:', error?.response?.data)
+    console.error('response status:', error?.response?.status)
+
+    alert(
+      error?.response?.data?.detail ||
+      error?.response?.data?.error ||
+      JSON.stringify(error?.response?.data) ||
+      'Erro ao atualizar foto.'
+    )
+  } finally {
+    uploadingPhoto.value = false
+    input.value = ''
+  }
+}
+
+async function removerFotoPerfil() {
+  try {
+    await api.delete('/me/profissional/foto/')
+    await loadPerfil()
+  } catch (error: any) {
+    console.error('Erro ao remover foto:', error)
+    alert(error?.response?.data?.detail || 'Erro ao remover foto.')
+  }
+}
+
+function abrirPerfil() {
+  openAccountSheet.value = false
+  currentScreen.value = 'settings'
+}
+
+function abrirConfiguracoesConta() {
+  openAccountSheet.value = false
+  currentScreen.value = 'settings'
+}
+
+function abrirTenantSwitcher() {
+  openAccountSheet.value = false
+  currentScreen.value = 'settings'
+}
+
+async function logout() {
+  try {
+    const refresh = localStorage.getItem('refresh_token')
+
+    if (refresh) {
+      await api.post('/logout/', { refresh_token: refresh })
+    }
+  } catch (error) {
+    console.error('Erro no logout remoto:', error)
+  } finally {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+    localStorage.removeItem('active_tenant_id')
+
+    delete api.defaults.headers.common.Authorization
+
+    perfilUsuario.value = {
+      nome: 'Profissional',
+      user_nome: '',
+      email: '',
+      foto: null,
+      tipo_usuario: '',
+      tenant_id: null,
+      tenant_nome: '',
+      tenants: [],
+      profissional: null,
+    }
+
+    openAccountSheet.value = false
+    currentScreen.value = 'login'
+  }
+}
+
 
 function openFilePicker() {
   console.log("clicou na foto")
@@ -197,29 +459,23 @@ async function onFileSelected(event: Event) {
   }
 }
 
-async function loadPerfil() {
-  try {
-    const { data } = await api.get('/me/')
-    perfilUsuario.value = {
-      nome: data.nome ?? 'Profissional',
-      email: data.email ?? '',
-      foto: data.foto ?? data.foto_url ?? null,
-      tipo_usuario: data.tipo_usuario ?? '',
-    }
-  } catch (e) {
-    console.error('Erro ao carregar perfil:', e)
-  }
-}
+
 
 // VERIFICAR SE JÁ ESTÁ LOGADO
-onMounted(() => {
-  const token = localStorage.getItem('accessToken')
-  if (token) {
-    isAuthenticated.value = true
-    currentScreen.value = 'dashboard'
-    loadPerfil()
-    loadDashboard()
-  }
+onMounted(async () => {
+  const token = localStorage.getItem('access_token')
+  if (!token) return
+
+  isAuthenticated.value = true
+
+  await loadPerfil()
+
+  currentScreen.value = 'dashboard'
+    
+  
+  await fetchClients()
+  await loadPackages()
+  await loadDashboard()
 })
 
 // Dashboard
@@ -245,18 +501,6 @@ async function loadDashboard() {
     loadingDashboard.value = false
   }
 }
-
-// nome do profissional logado
-const nomeProfissional = computed(() => {
-  const token = localStorage.getItem('accessToken')
-  if (!token) return 'Profissional'
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return payload.first_name || payload.email?.split('@')[0] || 'Profissional'
-  } catch {
-    return 'Profissional'
-  }
-})
 
 
 
@@ -296,10 +540,10 @@ onMounted(() => {
   fetchPackages();
 });
 
-// =========================
-// Estado principal
-// =========================
 
+// =========================
+// Interfaces
+// =========================
 
 interface Cliente {
   id: string | number
@@ -325,14 +569,18 @@ interface ClienteFormData {
   observacoes: string
 }
 
+// =========================
+// Estado principal
+// =========================
 const clients = ref<Cliente[]>([])
 const selectedClient = ref<Cliente | null>(null)
 const isSavingClient = ref(false)
 const isDeletingClient = ref(false)
+const editingClientId = ref<string | number | null>(null)
 
 
 // =========================
-// Criar cliente
+// Formulário novo cliente
 // =========================
 const newClient = ref<ClienteFormData>({
   nome: '',
@@ -346,16 +594,23 @@ const newClient = ref<ClienteFormData>({
 
 
 
-const fetchClients = async (): Promise<void> => {
+async function fetchClients() {
+  const token = localStorage.getItem('access_token')
+  if (!token) return
+
   try {
-    const res = await api.get('/clientes/')
-    clients.value = res.data
-  } catch (error: any) {
-    console.error('Erro ao buscar clientes:', error)
-    console.error(error?.response?.data)
+    const { data } = await api.get('/clientes/')
+    console.log('clientes carregados:', data)
+    clients.value = data
+  } catch (e: any) {
+    console.error('Erro ao buscar clientes:', e)
+    console.error('STATUS:', e?.response?.status)
+    console.error('DATA:', e?.response?.data)
 
     alert(
-      error?.response?.data?.detail ||
+      e?.response?.data?.detail ||
+      e?.response?.data?.error ||
+      JSON.stringify(e?.response?.data) ||
       'Erro ao carregar clientes'
     )
   }
@@ -391,12 +646,25 @@ async function openClientDetail(client: Cliente): Promise<void> {
   }
 }
 
-// =========================
-// Abrir Cadastro do cliente para edição
-// =========================
-function openNewClient(): void {
-  editingClientId.value = null
 
+// =========================
+// Formulário editar cliente
+// =========================
+const editClientForm = ref<ClienteFormData>({
+  nome: '',
+  responsavel: '',
+  cpf: '',
+  data_nascimento: '',
+  telefone: '',
+  email: '',
+  observacoes: ''
+})
+
+
+// =========================
+// Helpers
+// =========================
+function resetNewClientForm() {
   newClient.value = {
     nome: '',
     responsavel: '',
@@ -406,26 +674,25 @@ function openNewClient(): void {
     email: '',
     observacoes: ''
   }
-
-  currentScreen.value = 'client-form'
 }
 
-// =========================
-// Editar Cadasdro do cliente
-// =========================
+function resetEditClientForm() {
+  editClientForm.value = {
+    nome: '',
+    responsavel: '',
+    cpf: '',
+    data_nascimento: '',
+    telefone: '',
+    email: '',
+    observacoes: ''
+  }
+}
 
-const editClientForm = ref<ClienteFormData>({
-  nome: '',
-  cpf: '',
-  data_nascimento: '',
-  responsavel: '',
-  email: '',
-  telefone: '',
-  observacoes: ''
-})
-const editingClientId = ref<string | number | null>(null)
 
-function goToEditClient(client: Cliente) {
+// =========================
+// Abrir edição do cliente
+// =========================
+function goToEditClient(client: Cliente): void {
   editingClientId.value = client.id
 
   editClientForm.value = {
@@ -441,49 +708,39 @@ function goToEditClient(client: Cliente) {
   currentScreen.value = 'edit-client'
 }
 
-// =========================
-// Salvar Edição do Cliente
-// =========================
-function saveEditedClient() {
-  const id = editingClientId.value
-  if (id === null) return
-
-  const index = clients.value.findIndex(client => client.id === id)
-  if (index === -1) return
-
-  const updatedClient: Cliente = {
-    ...clients.value[index],
-    ...editClientForm.value
-  }
-
-  clients.value.splice(index, 1, updatedClient)
-  selectedClient.value = updatedClient
-  currentScreen.value = 'client-detail'
-  editingClientId.value = null
-}
 
 // =========================
-// Salvar cliente
+// Salvar cliente (novo ou edição)
 // =========================
 async function saveClient(): Promise<void> {
   try {
     isSavingClient.value = true
 
-    console.log('payload novo cliente:', newClient.value)
-    console.log('payload json:', JSON.stringify(newClient.value, null, 2))
+    const isEditing = editingClientId.value !== null
+    const payload = isEditing ? editClientForm.value : newClient.value
+
+    console.log('payload cliente:', payload)
+    console.log('payload json:', JSON.stringify(payload, null, 2))
 
     let response
 
-    if (editingClientId.value) {
-      response = await api.put(`/clientes/${editingClientId.value}/`, newClient.value)
+    if (isEditing) {
+      response = await api.put(`/clientes/${editingClientId.value}/`, payload)
     } else {
-      response = await api.post('/clientes/', newClient.value)
+      response = await api.post('/clientes/', payload)
     }
 
     console.log('cliente salvo:', response.data)
 
     await fetchClients()
     await openClientDetail(response.data)
+
+    if (isEditing) {
+      editingClientId.value = null
+      resetEditClientForm()
+    } else {
+      resetNewClientForm()
+    }
   } catch (error: any) {
     console.error(error)
     console.error(error?.response?.data)
@@ -493,7 +750,9 @@ async function saveClient(): Promise<void> {
       data?.detail ||
       (typeof data === 'object'
         ? Object.entries(data)
-            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(' ') : messages}`)
+            .map(([field, messages]) =>
+              `${field}: ${Array.isArray(messages) ? messages.join(' ') : messages}`
+            )
             .join('\n')
         : null) ||
       'Erro ao salvar cliente'
@@ -548,7 +807,6 @@ function cancelClientForm(): void {
 
 
 const clientPackages = ref<any[]>([])
-const packages = ref<any[]>([])
 const loadingPackages = ref(false)
 const packageError = ref('')
 
@@ -567,10 +825,11 @@ async function loadClientPackages(clientId: string | number) {
       params: { cliente: clientId },
     })
 
-    clientPackages.value = data
+    clientPackages.value = Array.isArray(data) ? data.filter(Boolean) : []
   } catch (error) {
     console.error('Erro ao carregar pacotes:', error)
     packageError.value = 'Erro ao carregar pacotes do cliente'
+    clientPackages.value = []
   } finally {
     loadingPackages.value = false
   }
@@ -582,9 +841,6 @@ async function loadClientPackages(clientId: string | number) {
 function goToScreen(screen: Screen) {
   currentScreen.value = screen
 }
-
-
-
 
 function openNewPackage(client: any) {
   selectedClient.value = client
@@ -607,7 +863,6 @@ function openAttendance(pkg: any) {
 
 
 
-
 // =========================
 // Watch de telas
 // =========================
@@ -626,15 +881,206 @@ watch(currentScreen, async (screen) => {
     }
   }
 
-  if (screen === 'attendance' && selectedClient.value) {
-    await loadClientSessoes(selectedClient.value.id)
+  if (screen === 'attendance') {
+    if (selectedClient.value?.id) {
+      await loadClientSessoes(selectedClient.value.id)
+    }
   }
 })
 
-function abrirNovoPacote(clienteId: string) {
+// =========================
+// Interfaces de sessões e parcelas para histórico
+// =========================
+// =========================
+// Tipos do pacote
+// =========================
+
+type PlanoPacote = 'basico' | 'pro' | 'premium'
+type StatusSessaoPreview = 'pendente' | 'realizada' | 'falta'
+type StatusParcelaPreview = 'pendente' | 'pago' | 'atrasado'
+
+interface SessaoPreview {
+  numero: number
+  status: StatusSessaoPreview
+}
+
+interface ParcelaPreview {
+  numero: number
+  status: StatusParcelaPreview
+  valor: number
+}
+
+interface PacoteSessoesFormData {
+  id: string | null
+  cliente: string
+  qtd_sessoes: number
+  valor_por_sessao: number
+  qtd_parcelas: number
+  dia_pagamento: number
+  data_inicio: string
+  data_fim: string
+  descricao: string
+  sessoes_preview: SessaoPreview[]
+  parcelas_preview: ParcelaPreview[]
+}
+
+interface PacoteSessoes {
+  id: string
+  tenant?: string
+  cliente: string | number
+  cliente_nome?: string
+  profissional?: string | number
+  profissional_nome?: string
+  descricao: string
+  qtd_sessoes: number
+  qtd_sessoes_usadas: number
+  sessoes_restantes: number
+  data_inicio: string
+  data_fim: string | null
+  valor_por_sessao: number | string
+  valor_total: number | string
+  qtd_parcelas: number
+  valor_parcela: number | string
+  dia_pagamento: number
+  status: 'ativo' | 'concluido' | 'cancelado' | 'vencido'
+  sessoes_preview: SessaoPreview[]
+  parcelas_preview: ParcelaPreview[]
+  created_at?: string
+}
+
+
+// =========================
+// Estado do pacote
+// =========================
+const packages = ref<PacoteSessoes[]>([])
+const isSavingPackage = ref(false)
+
+const newPackage = ref<PacoteSessoesFormData>({
+  id: null,
+  cliente: '',
+  qtd_sessoes: 1,
+  valor_por_sessao: 0,
+  qtd_parcelas: 1,
+  dia_pagamento: 1,
+  data_inicio: '',
+  data_fim: '',
+  descricao: '',
+  sessoes_preview: [],
+  parcelas_preview: []
+})
+
+interface NewPackage {
+  id: string | null
+  cliente: string  // não string | number
+  descricao: string
+  qtd_sessoes: number
+  valor_por_sessao: number
+  qtd_parcelas: number
+  dia_pagamento: number
+  data_inicio: string
+  data_fim: string
+} 
+
+// =========================
+// Computed
+// =========================
+
+const valorTotal = computed(() => {
+  return Number(newPackage.value.qtd_sessoes || 0) * Number(newPackage.value.valor_por_sessao || 0)
+})
+
+const valorParcela = computed(() => {
+  const qtd = Number(newPackage.value.qtd_parcelas || 1)
+  if (!qtd) return 0
+  return valorTotal.value / qtd
+})
+
+
+// =========================
+// Estado de controle
+// =========================
+const savingPackageIds = ref<Record<string, boolean>>({})
+const dirtyPackageIds = ref<Record<string, boolean>>({})
+
+// =========================
+// Helpers
+// =========================
+
+
+function gerarPreviewsPacote(): void {
+  const qtdSessoes = Number(newPackage.value.qtd_sessoes || 0)
+  const qtdParcelas = Number(newPackage.value.qtd_parcelas || 0)
+
+  newPackage.value.sessoes_preview = Array.from({ length: qtdSessoes }, (_, index) => ({
+    numero: index + 1,
+    status: 'pendente' as StatusSessaoPreview
+  }))
+
+  newPackage.value.parcelas_preview = Array.from({ length: qtdParcelas }, (_, index) => ({
+    numero: index + 1,
+    status: 'pendente' as StatusParcelaPreview,
+    valor: Number(valorParcela.value.toFixed(2))
+  }))
+}
+
+function alternarStatusSessaoDoPacote(pkg: any, numero: number): void {
+  const sessao = pkg?.sessoes_preview?.find((item: any) => item.numero === numero)
+  if (!sessao) return
+
+  if (sessao.status === 'pendente') {
+    sessao.status = 'realizada'
+  } else if (sessao.status === 'realizada') {
+    sessao.status = 'falta'
+  } else {
+    sessao.status = 'pendente'
+  }
+  dirtyPackageIds.value[pkg.id] = true
+}
+
+function alternarStatusParcelaDoPacote(pkg: any, numero: number): void {
+  const parcela = pkg?.parcelas_preview?.find((item: any) => item.numero === numero)
+  if (!parcela) return
+
+  if (parcela.status === 'pendente') {
+    parcela.status = 'pago'
+  } else if (parcela.status === 'pago') {
+    parcela.status = 'atrasado'
+  } else {
+    parcela.status = 'pendente'
+  }
+  dirtyPackageIds.value[pkg.id] = true
+}
+
+async function salvarPacote(pkg: any) {
+  try {
+    savingPackageIds.value[pkg.id] = true
+
+    await api.patch(`/pacotes-sessoes/${pkg.id}/`, {
+      sessoes_preview: pkg.sessoes_preview || [],
+      parcelas_preview: pkg.parcelas_preview || [],
+    })
+
+    dirtyPackageIds.value[pkg.id] = false
+
+    if (selectedClient.value?.id) {
+      await loadClientPackages(selectedClient.value.id)
+    }
+  } catch (error) {
+    console.error('Erro ao salvar pacote:', error)
+    alert('Não foi possível salvar as alterações do pacote.')
+  } finally {
+    savingPackageIds.value[pkg.id] = false
+  }
+}
+
+
+
+function resetPackageForm(clienteId?: string | number) {
+  if (!clienteId) return
+  
   newPackage.value = {
     id: null,
-    cliente: clienteId,
+    cliente: String(clienteId),
     descricao: '',
     qtd_sessoes: 0,
     valor_por_sessao: 0,
@@ -642,20 +1088,133 @@ function abrirNovoPacote(clienteId: string) {
     dia_pagamento: 5,
     data_inicio: new Date().toISOString().slice(0, 10),
     data_fim: '',
+    sessoes_preview: [],
+    parcelas_preview: [],
   }
-  currentScreen.value = 'new-package'
+
+  gerarPreviewsPacote()
+}
+
+function getSessaoStatusClass(status: string): string {
+  if (status === 'realizada') return 'bg-green-500'
+  if (status === 'falta') return 'bg-red-500'
+  return 'bg-yellow-400'
+}
+
+function getParcelaStatusClass(status: string): string {
+  if (status === 'pago') return 'bg-green-500'
+  if (status === 'atrasado') return 'bg-red-500'
+  return 'bg-yellow-400'
+}
+
+function isPlanoBasicoPacote(planoTipo?: string): boolean {
+  return ['free', 'basico'].includes(String(planoTipo || '').toLowerCase())
 }
 
 
+function isPlanoAvancadoPacote(planoTipo?: string): boolean {
+  return ['pro', 'premium'].includes(String(planoTipo || '').toLowerCase())  
+}
+
+
+// =========================
+// API
+// =========================
+
+async function fetchPackages(): Promise<void> {
+  try {
+    const response = await api.get('/pacotes-sessoes/')
+    packages.value = response.data
+  } catch (error) {
+    console.error('Erro ao carregar pacotes:', error)
+  }
+}
+
+async function savePackage(): Promise<void> {
+  try {
+    isSavingPackage.value = true
+
+    if (!newPackage.value.sessoes_preview.length || !newPackage.value.parcelas_preview.length) {
+      gerarPreviewsPacote()
+    }
+
+    const payload = {
+      cliente: newPackage.value.cliente,
+      descricao: newPackage.value.descricao,
+      qtd_sessoes: Number(newPackage.value.qtd_sessoes),
+      data_inicio: newPackage.value.data_inicio,
+      data_fim: newPackage.value.data_fim || null,
+      valor_por_sessao: Number(newPackage.value.valor_por_sessao),
+      qtd_parcelas: Number(newPackage.value.qtd_parcelas),
+      dia_pagamento: Number(newPackage.value.dia_pagamento),
+      sessoes_preview: newPackage.value.sessoes_preview,
+      parcelas_preview: newPackage.value.parcelas_preview
+    }
+
+    console.log('=== PAYLOAD PACOTE ===')
+    console.log(payload)
+    console.log(JSON.stringify(payload, null, 2))
+
+    const response = await api.post('/pacotes-sessoes/', payload)
+
+    console.log('=== RESPONSE PACOTE ===')
+    console.log(response.data)
+
+    await fetchPackages()
+    resetPackageForm()
+    navigateTo('dashboard')
+  } catch (error: any) {
+    console.error('=== ERRO SAVE PACKAGE ===')
+    console.error(error)
+    console.error('status:', error?.response?.status)
+    console.error('data:', error?.response?.data)
+
+    const data = error?.response?.data
+    const message =
+      data?.detail ||
+      (typeof data === 'object'
+        ? Object.entries(data)
+            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(' ') : messages}`)
+            .join('\n')
+        : null) ||
+      'Erro ao salvar pacote'
+
+    alert(message)
+  } finally {
+    isSavingPackage.value = false
+  }
+}
+
+
+function abrirNovoPacote(clienteId?: string | number) {
+  if (!clienteId) return
+
+  newPackage.value = {
+    id: null,
+    cliente: String(clienteId),
+    descricao: '',
+    qtd_sessoes: 0,
+    valor_por_sessao: 0,
+    qtd_parcelas: 1,
+    dia_pagamento: 5,
+    data_inicio: new Date().toISOString().slice(0, 10),
+    data_fim: '',
+    sessoes_preview: [],
+    parcelas_preview: [],
+  }
+
+  currentScreen.value = 'new-package'
+}
+
 const selectedPackage = ref<any | null>(null)
 const newAttendance = ref({
-  pacote: '',
-  cliente: '',
-  data: '',           // separamos data e hora para facilitar o input
-  hora_inicio: '',
-  hora_fim: '',
-  status: 'agendada' as string,
-  observacoes: '',
+    pacote: '',
+    cliente: '',   // já vem do pacote
+    data: new Date().toISOString().slice(0, 10),
+    hora_inicio: '',
+    hora_fim: '',
+    status: 'agendada',
+    observacoes: '',
 })
 
 // Histórico de sessões
@@ -677,9 +1236,11 @@ async function loadClientSessoes(clienteId: string, pacoteId?: string) {
   }
 }
 
-function openSessaoHistory(clienteId: string) {
+function openSessaoHistory(clienteId?: string | number) {
+  if (!clienteId) return
+
   selectedPacoteFilter.value = ''
-  loadClientSessoes(clienteId)
+  loadClientSessoes(String(clienteId))
   currentScreen.value = 'attendance'
 }
 
@@ -746,45 +1307,7 @@ async function saveAttendance() {
   }
 }
 
-interface NewPackage {
-  id: string | null
-  cliente: string  // não string | number
-  descricao: string
-  qtd_sessoes: number
-  valor_por_sessao: number
-  qtd_parcelas: number
-  dia_pagamento: number
-  data_inicio: string
-  data_fim: string
 
-  // outros campos...
-} 
-
-// formulário de novo pacote de sessões (PacoteSessoes)
-const newPackage = ref<NewPackage>({
-  id: null as string | null,
-  cliente: '' as string,        // será preenchido com selectedClient.id
-  descricao: '',
-  qtd_sessoes: 0,
-  valor_por_sessao: 0,
-  qtd_parcelas: 1,
-  dia_pagamento: 5,
-  data_inicio: '',
-  data_fim: '',
-})
-
-// valores calculados em tempo real
-const valorTotal = computed(() => {
-  const qtd = Number(newPackage.value.qtd_sessoes) || 0
-  const valor = Number(newPackage.value.valor_por_sessao) || 0
-  return qtd * valor
-})
-
-const valorParcela = computed(() => {
-  const total = valorTotal.value
-  const parcelas = Number(newPackage.value.qtd_parcelas) || 0
-  return parcelas > 0 ? total / parcelas : 0
-})
 
 // carrega todos os pacotes do tenant logado
 async function loadPackages() {
@@ -801,43 +1324,7 @@ async function loadPackages() {
   }
 }
 
-// salva novo pacote de sessões (PacoteSessoes)
-async function savePackage() {
-  try {
-    packageError.value = ''
 
-    if (!selectedClient.value) {
-      packageError.value = 'Selecione um cliente.'
-      return
-    }
-
-    // garante cliente e monta payload
-    newPackage.value.cliente = selectedClient.value.id
-
-    const payload = {
-      cliente: newPackage.value.cliente,
-      descricao: newPackage.value.descricao,
-      qtd_sessoes: newPackage.value.qtd_sessoes,
-      valor_por_sessao: newPackage.value.valor_por_sessao,
-      qtd_parcelas: newPackage.value.qtd_parcelas,
-      dia_pagamento: newPackage.value.dia_pagamento,
-      data_inicio: newPackage.value.data_inicio,
-      data_fim: newPackage.value.data_fim,
-      // opcionais: backend recalcula, mas mandamos também
-      valor_total: valorTotal.value,
-      valor_parcela: valorParcela.value,
-    }
-
-    await api.post('/pacotes-sessoes/', payload) // ajuste a URL ao seu viewset
-    await loadPackages()
-    // atualiza pacotes do cliente atual (se você quiser ver o novo na tela de detalhes)
-    await loadClientPackages(selectedClient.value.id)
-    currentScreen.value = 'client-detail'
-  } catch (e: any) {
-    console.error(e)
-    packageError.value = 'Erro ao salvar pacote de sessões.'
-  }
-}
 
 // toda vez que entrar na tela de "novo pacote", podemos carregar dados auxiliares
 watch(currentScreen, (screen) => {
@@ -850,30 +1337,17 @@ watch(currentScreen, (screen) => {
 const contracts = ref<any[]>([]);
 
 
-const fetchPackages = async () => {
-  try {
-    const res = await api.get('/pacotes-sessoes/')
-    packages.value = res.data
-  } catch (error) {
-    console.error('Erro ao buscar pacotes:', error)
-  }
-}
-
-
-
-
 function navigateTo(screen: Screen) {
   currentScreen.value = screen
 }
-
-// Form states
-
 
 
 </script>
 
 <template>
-  <div class="bg-slate-50 min-h-screen font-sans text-slate-900">
+
+    
+    
 
     <!-- LOGIN SCREEN -->
     <div
@@ -1058,7 +1532,7 @@ function navigateTo(screen: Screen) {
         class="flex flex-col gap-4 px-6 py-6"
       >
 
-        <!-- Plano info -->
+        <!-- Informações dos Planos -->
         <div class="bg-blue-50 rounded-2xl p-4 flex items-start gap-3 mb-2">
           <span class="material-symbols-outlined text-blue-600 mt-0.5" style="font-size: 20px">
             info
@@ -1078,7 +1552,7 @@ function navigateTo(screen: Screen) {
 
         <label class="flex flex-col w-full">
           <p class="text-sm font-semibold pb-2">
-            Nome / Nome da clínica / estúdio
+            Nome / Nome da clínica / estúdio / Escola
             <span class="text-red-500">*</span>
           </p>
           <input
@@ -1191,6 +1665,7 @@ function navigateTo(screen: Screen) {
       </form>
     </div>
 
+    <!-- Seleção do TENANT para profissionais prensentes em mais de um tenants -->
     
 
     <!-- DASHBOARD SCREEN -->
@@ -1199,54 +1674,130 @@ function navigateTo(screen: Screen) {
       class="max-w-md mx-auto bg-white min-h-screen shadow-xl pb-24"
     >
       <header class="flex items-center p-4 sticky top-0 bg-white z-10 border-b border-slate-100">
-        <button
-          type="button"
-          class="size-10 rounded-full bg-amber-100 overflow-hidden border-2 border-orange-500 shrink-0 flex items-center justify-center text-orange-700 font-bold"
-          @click="openFilePicker"
-          :disabled="isUploading"
-          aria-label="Alterar foto do perfil"
-        >
-          <img
-            v-if="perfilUsuario.foto"
-            :src="perfilUsuario.foto"
-            alt="Foto do perfil"
-            class="w-full h-full object-cover"
-          />
-          <span v-else>
-            {{ perfilUsuario.nome?.slice(0, 2).toUpperCase() }}
-          </span>
-        </button>
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <button
+              type="button"
+              @click="openAccountSheet = true"
+              class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-orange-300 bg-orange-50 text-sm font-bold text-orange-700 shadow-sm"
+            >
+              <img
+                v-if="fotoProfissional"
+                :src="fotoProfissional"
+                alt="Foto do perfil"
+                class="h-full w-full object-cover"
+              />
+              <span v-else>{{ iniciaisProfissional }}</span>
+            </button>
 
-        <input
-          ref="fileInput"
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          class="hidden"
-          @change="onFileSelected"
-        />
+            <div class="min-w-0">
+              <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+                Bem-vindo de volta
+              </p>
+              <h1 class="truncate text-[28px] font-black leading-none text-zinc-900">
+                Olá, {{ nomeProfissional }}
+              </h1>
+            </div>
+          </div>
 
-        <div class="ml-3 flex-1 min-w-0">
-          <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-            Bem-vindo de volta
-          </p>
-          <h2 class="text-lg font-bold leading-tight truncate">
-            Olá, {{ perfilUsuario.nome }}
-          </h2>
+          <button
+            type="button"
+            class="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-700 shadow-sm"
+          >
+            <Bell class="h-5 w-5" />
+          </button>
         </div>
+        <transition name="fade">
+          <div
+            v-if="openAccountSheet"
+            class="fixed inset-0 z-40 bg-black/40"
+            @click="openAccountSheet = false"
+          />
+        </transition>
 
-        <button class="relative p-2 rounded-xl bg-slate-50 text-slate-600">
-          <Bell :size="20" />
-        </button>
+        <transition name="slide-up">
+          <div
+            v-if="openAccountSheet"
+            class="fixed inset-x-0 bottom-0 z-50 rounded-t-[28px] bg-white px-5 pb-8 pt-4 shadow-2xl md:inset-auto md:right-4 md:top-20 md:w-[380px] md:rounded-[28px] md:px-4 md:pb-4 md:pt-4"
+          >
+            <div class="mx-auto mb-4 h-1.5 w-14 rounded-full bg-zinc-200"></div>
+
+            <div class="flex items-center gap-4">
+              <div class="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-zinc-200 bg-orange-50 text-lg font-bold text-orange-700">
+                <img
+                  v-if="fotoProfissional"
+                  :src="fotoProfissional"
+                  alt="Foto do perfil"
+                  class="h-full w-full object-cover"
+                />
+                <span v-else>{{ iniciaisProfissional }}</span>
+              </div>
+
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-lg font-semibold text-zinc-900">{{ nomeProfissional }}</p>
+                <p class="truncate text-sm text-zinc-500">{{ perfilUsuario.email }}</p>
+                <p class="truncate text-xs text-zinc-400">{{ perfilUsuario.tenant_nome }}</p>
+              </div>
+            </div>
+
+            <div class="mt-5 border-t border-zinc-100 pt-4 space-y-1">
+              <label class="flex cursor-pointer items-center gap-4 rounded-2xl px-3 py-3 transition hover:bg-zinc-50">
+                <span>📷</span>
+                <span class="text-[15px] font-medium text-zinc-900">
+                  {{ uploadingPhoto ? 'Enviando foto...' : 'Alterar foto' }}
+                </span>
+                <input type="file" accept="image/*" class="hidden" @change="onSelectProfilePhoto" />
+              </label>
+
+              <button
+                type="button"
+                @click="removerFotoPerfil"
+                class="flex w-full items-center gap-4 rounded-2xl px-3 py-3 text-left transition hover:bg-zinc-50"
+              >
+                <span>🗑️</span>
+                <span class="text-[15px] font-medium text-zinc-900">Remover foto</span>
+              </button>
+
+              <button
+                type="button"
+                @click="abrirPerfil"
+                class="flex w-full items-center gap-4 rounded-2xl px-3 py-3 text-left transition hover:bg-zinc-50"
+              >
+                <span>👤</span>
+                <span class="text-[15px] font-medium text-zinc-900">Perfil profissional</span>
+              </button>
+
+              <button
+                type="button"
+                @click="abrirConfiguracoesConta"
+                class="flex w-full items-center gap-4 rounded-2xl px-3 py-3 text-left transition hover:bg-zinc-50"
+              >
+                <span>⚙️</span>
+                <span class="text-[15px] font-medium text-zinc-900">Configurações da conta</span>
+              </button>
+
+              <button
+                type="button"
+                @click="abrirTenantSwitcher"
+                class="flex w-full items-center gap-4 rounded-2xl px-3 py-3 text-left transition hover:bg-zinc-50"
+              >
+                <span>🏢</span>
+                <span class="text-[15px] font-medium text-zinc-900">Trocar Empresa ou espaço</span>
+              </button>
+
+              <button
+                type="button"
+                @click="logout"
+                class="flex w-full items-center gap-4 rounded-2xl px-3 py-3 text-left text-red-600 transition hover:bg-red-50"
+              >
+                <span>↩️</span>
+                <span class="text-[15px] font-medium">Sair</span>
+              </button>
+            </div>
+          </div>
+        </transition>
       </header>
-
-      <p v-if="isUploading" class="px-4 pt-2 text-sm text-slate-500">
-        Enviando foto...
-      </p>
-
-      <p v-if="errorMessage" class="px-4 pt-2 text-sm text-red-500">
-        {{ errorMessage }}
-      </p>
-
+       
       <div class="p-4 space-y-5">
 
         <!-- Resumo rápido -->
@@ -1454,7 +2005,7 @@ function navigateTo(screen: Screen) {
           <LayoutDashboard :size="24" />
           <span class="text-[10px] font-bold">Início</span>
         </button>
-        <button @click="navigateTo('clients')" class="flex flex-col items-center gap-1 text-orange-600">
+        <button @click="navigateTo('clients')" class="flex flex-col items-center gap-1 text-slate-400">
           <Users :size="24" />
           <span class="text-[10px] font-bold">Clientes</span>
         </button>
@@ -1701,10 +2252,10 @@ function navigateTo(screen: Screen) {
           </div>
         </section>
         <!-- Botão salvar Cliente -->
-        <button @click="saveClient" :disabled="isSavingClient">
+        <button @click="saveClient" :disabled="isSavingClient" class="w-full bg-orange-500 text-white py-3 rounded-2xl font-bold">
           {{ isSavingClient ? 'Salvando...' : editingClientId ? 'Salvar alterações' : 'Salvar cliente' }}
         </button>
-        <button @click="cancelClientForm">Cancelar</button>
+        <button @click="cancelClientForm" class="w-full bg-orange-500 text-white py-3 rounded-2xl font-bold">Cancelar</button>
       </form>
     </div>
 
@@ -1832,7 +2383,7 @@ function navigateTo(screen: Screen) {
         <!-- Botão salvar Cliente -->
             <button
               type="button"
-              @click="saveEditedClient"
+              @click="saveClient"
               class="w-full bg-orange-500 text-white py-3 rounded-2xl font-bold"
             >
               Salvar alterações
@@ -1842,7 +2393,8 @@ function navigateTo(screen: Screen) {
       
 
     <!-- NEW PACKAGE / NOVO PACOTE DE SESSÕES -->
-    <div v-else-if="currentScreen === 'new-package'"
+    <div
+      v-else-if="currentScreen === 'new-package'"
       class="max-w-md mx-auto bg-white min-h-screen shadow-xl"
     >
       <header class="flex items-center p-4 sticky top-0 bg-white z-10 border-b border-slate-100">
@@ -1856,6 +2408,22 @@ function navigateTo(screen: Screen) {
       </header>
 
       <form @submit.prevent="savePackage" class="p-4 space-y-6">
+        <!-- Plano atual -->
+          <section class="space-y-4">
+            <div class="flex items-center gap-2 text-orange-600">
+              <PackageIcon :size="18" />
+              <h3 class="font-bold">Plano atual</h3>
+            </div>
+
+            <div class="rounded-2xl bg-orange-50 border border-orange-100 px-4 py-3">
+              <p class="text-sm font-semibold text-orange-700">
+                {{ planoAtualLabel }}
+              </p>
+              <p class="text-xs text-orange-600 mt-1">
+                Os recursos deste pacote seguem o plano do profissional.
+              </p>
+            </div>
+          </section>
 
         <!-- Cliente -->
         <section class="space-y-4">
@@ -1863,26 +2431,25 @@ function navigateTo(screen: Screen) {
             <Users :size="18" />
             <h3 class="font-bold">Cliente</h3>
           </div>
-          <div class="space-y-4">
-            <label class="block">
-              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">
-                Cliente
-              </span>
-              <select
-                v-model="selectedClient"
-                class="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500"
+
+          <label class="block">
+            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">
+              Cliente
+            </span>
+            <select
+              v-model="newPackage.cliente"
+              class="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500"
+            >
+              <option disabled value="">Selecione o cliente</option>
+              <option
+                v-for="client in clients"
+                :key="client.id"
+                :value="client.id"
               >
-                <option disabled value="">Selecione o cliente</option>
-                <option v-for="client in clients" 
-                        :key="client.id" :value="client" 
-                        @click="openClientDetail(client.id)"
-                        class="cursor-pointer bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between"
-                >
-                  {{ client.nome }}
-                </option>
-              </select>
-            </label>
-          </div>
+                {{ client.nome }}
+              </option>
+            </select>
+          </label>
         </section>
 
         <!-- Sessões e valores -->
@@ -1892,7 +2459,6 @@ function navigateTo(screen: Screen) {
             <h3 class="font-bold">Sessões e Valores</h3>
           </div>
 
-          <!-- Quantidade de sessões -->
           <label class="block">
             <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">
               Quantas sessões?
@@ -1901,11 +2467,11 @@ function navigateTo(screen: Screen) {
               type="number"
               min="1"
               v-model.number="newPackage.qtd_sessoes"
+              @input="gerarPreviewsPacote"
               class="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500"
             />
           </label>
 
-          <!-- Valor por sessão -->
           <label class="block">
             <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">
               Valor por sessão (R$)
@@ -1919,7 +2485,6 @@ function navigateTo(screen: Screen) {
             />
           </label>
 
-          <!-- Total do pacote (somente leitura) -->
           <label class="block">
             <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">
               Total do pacote (R$)
@@ -1933,14 +2498,13 @@ function navigateTo(screen: Screen) {
           </label>
         </section>
 
-        <!-- Parcelas e pagamento -->
+        <!-- Pagamento -->
         <section class="space-y-4">
           <div class="flex items-center gap-2 text-orange-600">
             <Wallet :size="18" />
             <h3 class="font-bold">Pagamento</h3>
           </div>
 
-          <!-- Quantidade de parcelas -->
           <label class="block">
             <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">
               Quantidade de parcelas
@@ -1949,11 +2513,11 @@ function navigateTo(screen: Screen) {
               type="number"
               min="1"
               v-model.number="newPackage.qtd_parcelas"
+              @input="gerarPreviewsPacote"
               class="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500"
             />
           </label>
 
-          <!-- Valor por parcela (somente leitura) -->
           <label class="block">
             <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">
               Valor por parcela (R$)
@@ -1966,7 +2530,6 @@ function navigateTo(screen: Screen) {
             />
           </label>
 
-          <!-- Dia do pagamento -->
           <label class="block">
             <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">
               Dia do pagamento
@@ -1981,6 +2544,8 @@ function navigateTo(screen: Screen) {
             </select>
           </label>
         </section>
+  
+        
 
         <!-- Período -->
         <section class="space-y-4">
@@ -2022,11 +2587,10 @@ function navigateTo(screen: Screen) {
               v-model="newPackage.descricao"
               rows="3"
               class="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500"
-            />
+            ></textarea>
           </label>
         </section>
 
-        <!-- Botão salvar -->
         <button
           type="submit"
           class="w-full py-3 mt-4 rounded-2xl bg-orange-500 text-white font-bold text-sm flex items-center justify-center gap-2"
@@ -2037,7 +2601,7 @@ function navigateTo(screen: Screen) {
       </form>
     </div>
 
-    <!-- CLIENT DETAIL / PERFIL DO CLIENTE -->
+    <!-- DETALHES DO CLIENTE / PERFIL DO CLIENTE -->
     <div v-else-if="currentScreen === 'client-detail' && selectedClient"
       class="max-w-md mx-auto bg-white min-h-screen shadow-xl pb-24"
     >
@@ -2074,12 +2638,24 @@ function navigateTo(screen: Screen) {
             Observações: {{ selectedClient.observacoes || '—' }}
           </p>
 
-          <button @click="goToEditClient(selectedClient!)" 
-                class="w-15 mt-2 py-2 rounded-xl bg-orange-500 text-white text-xs font-bold">Editar</button>
-          <button @click="deleteClient(selectedClient!.id)" :disabled="isDeletingClient"
-                  class="w-15 mt-2 py-2 rounded-xl bg-red-500 text-white text-xs font-bold" >
-            {{ isDeletingClient ? 'Excluindo...' : 'Excluir' }}
-          </button>
+          <div class="mt-4 flex items-center gap-2">
+            <button
+              type="button"
+              @click="selectedClient && goToEditClient(selectedClient)"
+              class="inline-flex h-10 items-center justify-center rounded-xl bg-orange-500 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 active:scale-[0.98]"
+            >
+              Editar Cliente
+            </button>
+
+            <button
+              type="button"
+              @click="selectedClient && deleteClient(selectedClient.id)"
+              :disabled="isDeletingClient"
+              class="inline-flex h-10 items-center justify-center rounded-xl bg-red-500 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-red-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {{ isDeletingClient ? 'Excluindo...' : 'Excluir' }}
+            </button>
+          </div>
         </section>
 
         
@@ -2090,7 +2666,7 @@ function navigateTo(screen: Screen) {
               Pacotes de Sessões
             </p>
             <button
-              @click="abrirNovoPacote(selectedClient.id)"
+              @click="abrirNovoPacote(selectedClient?.id)"
               class="flex items-center gap-1 text-xs font-bold text-orange-500"
             >
               <Plus :size="14" />
@@ -2098,7 +2674,7 @@ function navigateTo(screen: Screen) {
             </button>
 
             <button
-              @click="openSessaoHistory(selectedClient.id)"
+              @click="openSessaoHistory(selectedClient?.id)"
               class="flex items-center gap-1 text-xs font-bold text-slate-500"
             >
               <Calendar :size="14" />
@@ -2124,7 +2700,7 @@ function navigateTo(screen: Screen) {
             <PackageIcon :size="32" class="mx-auto text-slate-300 mb-2" />
             <p class="text-sm text-slate-400">Nenhum pacote cadastrado.</p>
             <button
-              @click="abrirNovoPacote(selectedClient.id)"
+              @click="abrirNovoPacote(selectedClient?.id)"
               class="mt-3 text-xs font-bold text-orange-500"
             >
               Adicionar primeiro pacote
@@ -2134,61 +2710,144 @@ function navigateTo(screen: Screen) {
           <!-- Lista de pacotes -->
           <div
             v-else
-            v-for="pkg in clientPackages"
-            :key="pkg.id"
-            class="bg-slate-50 rounded-2xl p-4 space-y-2"
-          >
-            <!-- Descrição e status -->
-            <div class="flex justify-between items-center">
-              <h4 class="font-bold text-sm">
-                {{ pkg.descricao || 'Pacote de Sessões' }}
-              </h4>
-              <span
-                class="text-[10px] font-bold uppercase px-2 py-1 rounded-full"
-                :class="{
-                  'bg-green-100 text-green-600': pkg.status === 'ativo',
-                  'bg-slate-200 text-slate-500': pkg.status === 'concluido',
-                  'bg-red-100 text-red-500': pkg.status === 'cancelado',
-                  'bg-yellow-100 text-yellow-600': pkg.status === 'vencido',
-                }"
-              >
-                {{ pkg.status }}
-              </span>
-            </div>
-
-            <!-- Sessões -->
-            <p class="text-xs text-slate-500">
-              Sessões: {{ pkg.qtd_sessoes_usadas }} / {{ pkg.qtd_sessoes }}
-              &nbsp;·&nbsp;
-              Restantes: {{ pkg.sessoes_restantes }}
-            </p>
-
-            <!-- Financeiro -->
-            <p class="text-xs text-slate-500">
-              Valor total: R$ {{ Number(pkg.valor_total).toFixed(2) }}
-              &nbsp;·&nbsp;
-              {{ pkg.qtd_parcelas }}x de R$ {{ Number(pkg.valor_parcela).toFixed(2) }}
-              &nbsp;·&nbsp;
-              Venc. dia {{ pkg.dia_pagamento }}
-            </p>
-
-            <!-- Período -->
-            <p class="text-xs text-slate-500">
-              Período: {{ pkg.data_inicio }} - {{ pkg.data_fim || 'Em aberto' }}
-            </p>
-
-            <!-- Botão registrar sessão -->
-            <button
-              @click="openAttendance(pkg)"
-              class="w-full mt-2 py-2 rounded-xl bg-orange-500 text-white text-xs font-bold"
+            v-for="pkg in (clientPackages || []).filter(Boolean)"
+              :key="pkg.id"
+              class="bg-white rounded-3xl border border-slate-100 shadow-sm p-4 space-y-4"
             >
-              REGISTRAR SESSÃO
-            </button>
-          </div>
-        </section>
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <h4 class="font-bold text-slate-800">Pacote de Sessões</h4>
+                  <p class="text-xs text-slate-500 mt-1">
+                    Plano do pacote: {{ pkg.plano_tipo === 'premium' ? 'Premium' : pkg.plano_tipo === 'pro' ? 'Pro' : 'Básico' }}
+                  </p>
+                </div>
 
-      </main>
-    </div>
+                <span
+                  class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase"
+                  :class="{
+                    'bg-green-100 text-green-700': pkg.status === 'ativo',
+                    'bg-slate-200 text-slate-700': pkg.status === 'concluido',
+                    'bg-red-100 text-red-700': pkg.status === 'cancelado',
+                    'bg-yellow-100 text-yellow-700': pkg.status === 'vencido'
+                  }"
+                >
+                  {{ pkg.status }}
+                </span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 text-sm">
+                <div class="rounded-2xl bg-slate-50 p-3">
+                  <p class="text-[11px] uppercase tracking-wide text-slate-500">Sessões</p>
+                  <p class="font-semibold text-slate-800 mt-1">
+                    {{ pkg.qtd_sessoes_usadas }} / {{ pkg.qtd_sessoes }}
+                  </p>
+                  <p class="text-xs text-slate-500 mt-1">
+                    Restantes: {{ pkg.sessoes_restantes }}
+                  </p>
+                </div>
+
+                <div class="rounded-2xl bg-slate-50 p-3">
+                  <p class="text-[11px] uppercase tracking-wide text-slate-500">Parcelas</p>
+                  <p class="font-semibold text-slate-800 mt-1">
+                    {{ pkg.qtd_parcelas }}x de R$ {{ Number(pkg.valor_parcela).toFixed(2) }}
+                  </p>
+                  <p class="text-xs text-slate-500 mt-1">
+                    Venc. dia {{ String(pkg.dia_pagamento).padStart(2, '0') }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="rounded-2xl bg-slate-50 p-3 text-sm text-slate-600 space-y-1">
+                <p><span class="font-medium text-slate-700">Valor total:</span> R$ {{ Number(pkg.valor_total).toFixed(2) }}</p>
+                <p><span class="font-medium text-slate-700">Período:</span> {{ pkg.data_inicio }} - {{ pkg.data_fim || 'Em aberto' }}</p>
+                <p v-if="pkg.descricao"><span class="font-medium text-slate-700">Obs:</span> {{ pkg.descricao }}</p>
+              </div>
+
+              <!-- PLANO BÁSICO -->
+              <div v-if="isPlanoBasicoPacote(pkg.plano_tipo)" class="space-y-3">
+                <div>
+                  <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-2">
+                    Sessões do pacote
+                  </p>
+
+                  <div class="flex flex-wrap gap-2">
+                    <span
+                      v-for="sessao in pkg.sessoes_preview || []"
+                      :key="`sessao-${pkg.id}-${sessao.numero}`"
+                      class="size-9 rounded-full text-[11px] font-bold text-white flex items-center justify-center cursor-pointer"
+                      @click="alternarStatusSessaoDoPacote(pkg, sessao.numero)"
+                      :class="getSessaoStatusClass(sessao.status)"
+                                                                   
+                    >
+                      {{ sessao.numero }}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-2">
+                    Parcelas do pacote
+                  </p>
+
+                  <div class="flex flex-wrap gap-2">
+                    <span
+                      v-for="parcela in pkg.parcelas_preview || []"
+                      :key="`parcela-${pkg.id}-${parcela.numero}`"
+                      class="h-9 min-w-[46px] px-3 rounded-2xl text-[11px] font-bold text-white flex items-center justify-center cursor-pointer"
+                      @click="alternarStatusParcelaDoPacote(pkg, parcela.numero)"
+                      :class="getParcelaStatusClass(parcela.status)"
+                    >
+                      {{ parcela.numero }}x
+                    </span>
+                  </div>
+                </div>
+
+                <div class="text-[11px] text-slate-500">
+                  Amarelo = pendente, verde = concluído/pago, vermelho = falta/atrasado.
+                </div>
+              </div>
+              <div class="flex justify-end">
+                <button
+                  v-if="dirtyPackageIds[pkg.id]"
+                  @click="salvarPacote(pkg)"
+                  :disabled="savingPackageIds[pkg.id]"
+                  class="inline-flex h-10 items-center justify-center rounded-xl bg-orange-500 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 disabled:opacity-60"
+                >
+                  {{ savingPackageIds[pkg.id] ? 'Salvando...' : 'Salvar alterações' }}
+                </button>
+              </div>
+            
+          
+
+       
+        
+            <div v-if="isPlanoAvancadoPacote(pkg.plano_tipo)" class="space-y-4">
+              <div class="flex items-center gap-2 text-orange-600">
+                <Calendar :size="18" />
+                <h3 class="font-bold">Planejamento do pacote</h3>
+              </div>
+        
+              <div class="rounded-3xl bg-slate-50 p-4 space-y-4">
+                <p class="text-sm text-slate-600">
+                  Neste plano, a próxima fase vai gerar automaticamente sessões recorrentes com base em dias e horários definidos no cadastro. [web:179][web:185]
+                </p>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <label class="block col-span-2">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">
+                      Resumo do modo avançado
+                    </span>
+                    <div class="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
+                      Cadastro preparado para agenda recorrente, reagendamento e gestão futura por dia/horário. [web:179][web:188]
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+        </div>
+      </section>
+    </main>
+  </div>
 
     
     <!-- ATTENDANCE NEW / REGISTRAR SESSÃO -->
@@ -2344,7 +3003,8 @@ function navigateTo(screen: Screen) {
           </span>
           <select
             v-model="selectedPacoteFilter"
-            @change="loadClientSessoes(selectedClient.id, selectedPacoteFilter || undefined)"
+            @change="
+            (selectedClient.id, selectedPacoteFilter || undefined)"
             class="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500"
           >
             <option value="">Todos os pacotes</option>
@@ -2453,7 +3113,7 @@ function navigateTo(screen: Screen) {
         class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-600"
       ></div>
     </div>
-  </div>
+  
   
   
 </template>
@@ -2471,5 +3131,28 @@ body {
 /* Custom scrollbar for better mobile feel */
 ::-webkit-scrollbar {
   width: 0px;
+}
+</style>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(100%);
+  opacity: 0.98;
 }
 </style>
