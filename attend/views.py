@@ -163,6 +163,7 @@ def register_view(request):
             'id': str(user.id),
             'email': user.email,
             'nome': profissional.nome_exibicao,
+            'especialidade': profissional.especialidade,
             'tenant': str(tenant.id),
             'tenant_slug': tenant.slug,
         }
@@ -797,6 +798,7 @@ def me_view(request):
         'email': user.email,
         'tipo_usuario': user.tipo_usuario,
         'nome': profissional.nome_exibicao if profissional else user.first_name,
+        'especialidade': profissional.especialidade if profissional else '',
         'user_nome': user.first_name,
         'tenant_id': str(tenant.id) if tenant else None,
         'tenant_nome': tenant.nome_fantasia if tenant else None,

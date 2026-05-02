@@ -71,6 +71,7 @@ async function handleRegister() {
 
   if (
     !registerForm.value.nome_fantasia ||
+    !registerForm.value.nome_exibicao ||
     !registerForm.value.email ||
     !registerForm.value.password
   ) {
@@ -312,6 +313,14 @@ const iniciaisProfissional = computed(() => {
   }
   
   return `${partes[0][0] ?? ''}${partes[1][0] ?? ''}`.toUpperCase()
+})
+
+const especialidadeProfissional = computed(() => {
+  return (
+    perfilUsuario.value.profissional?.nome_exibicao ||
+    perfilUsuario.value.tenant_nome ||
+    'Profissional'
+  )
 })
 
 async function loadPerfil() {
@@ -1585,7 +1594,7 @@ function navigateTo(screen: Screen) {
             Especialidade
           </p>
           <input
-            v-model="registerForm.nome_especialidade"
+            v-model="registerForm.especialidade"
             type="text"
             placeholder="Ex: Fisioterapeuta, Personal Trainer, Psicólogo..."
             class="form-input w-full rounded-xl border border-slate-200 h-14 px-4 focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
