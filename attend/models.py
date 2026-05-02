@@ -118,10 +118,11 @@ class Profissional(models.Model):
     telefone = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
     foto = models.ImageField(upload_to='profissionais/', null=True, blank=True)
-    #ativo = models.BooleanField(default=True)
+    ativo = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
 
+    
     
     def __str__(self):
         return self.nome_exibicao

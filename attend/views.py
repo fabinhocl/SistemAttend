@@ -85,7 +85,7 @@ def register_view(request):
     nome_exibicao = request.data.get('nome_exibicao', nome_fantasia).strip()
     telefone = request.data.get('telefone', '')
     documento = request.data.get('documento', '')
-
+    especialidade = request.data.get('especialidade', '').strip()
     # validações básicas
     if not email or not password:
         return Response(
@@ -141,6 +141,7 @@ def register_view(request):
         profissional = Profissional.objects.create(
             user=user,
             nome_exibicao=nome_exibicao or nome_fantasia,
+            especialidade=especialidade,
             telefone=telefone,
             email=email,
             ativo=True,

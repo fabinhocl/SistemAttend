@@ -51,6 +51,7 @@ type Screen =
 const registerForm = ref({
   // dados do profissional/tenant
   nome_fantasia: '',
+  especialidade: '',
   slug: '',
   email: '',
   telefone: '',
@@ -68,9 +69,11 @@ const registerSuccess = ref(false)
 async function handleRegister() {
   registerError.value = ''
 
-  if (!registerForm.value.nome_fantasia ||
-      !registerForm.value.email ||
-      !registerForm.value.password) {
+  if (
+    !registerForm.value.nome_fantasia ||
+    !registerForm.value.email ||
+    !registerForm.value.password
+  ) {
     registerError.value = 'Preencha todos os campos obrigatórios.'
     return
   }
@@ -82,19 +85,22 @@ async function handleRegister() {
 
   try {
     registerLoading.value = true
-  // usa axios puro para não enviar token JWT no header
-    const { data } = await axios.post(
-      'http://127.0.0.1:8000/api/v1/registro-profissional/',
-      {
+
+    const payload = {
       nome_fantasia: registerForm.value.nome_fantasia,
       nome_exibicao: registerForm.value.nome_exibicao,
+      especialidade: registerForm.value.especialidade,
       email: registerForm.value.email,
       password: registerForm.value.password,
       telefone: registerForm.value.telefone,
       documento: registerForm.value.documento,
-    })
+    }
 
-    // salva tokens e já entra no dashboard
+    const { data } = await axios.post(
+      'http://127.0.0.1:8000/api/v1/registro-profissional/',
+      payload
+    )
+
     localStorage.setItem('access_token', data.access)
     localStorage.setItem('refreshToken', data.refresh)
 
@@ -108,13 +114,13 @@ async function handleRegister() {
       loadDashboard()
       loadPackages()
     }, 1500)
-
   } catch (e: any) {
     const errData = e?.response?.data
-    registerError.value = errData?.error
-      || errData?.detail
-      || errData?.email?.[0]
-      || 'Erro ao realizar cadastro.'
+    registerError.value =
+      errData?.error ||
+      errData?.detail ||
+      errData?.email?.[0] ||
+      'Erro ao realizar cadastro.'
   } finally {
     registerLoading.value = false
   }
@@ -1565,11 +1571,21 @@ function navigateTo(screen: Screen) {
         </label>
 
         <label class="flex flex-col w-full">
+          <p class="text-sm font-semibold pb-2">Nome de exibição</p>
+          <input
+            v-model="registerForm.nome_exibicao"
+            type="text"
+            placeholder="Ex: João Silva"
+            class="form-input w-full rounded-xl border border-slate-200"
+          />
+        </label>
+
+        <label class="flex flex-col w-full">
           <p class="text-sm font-semibold pb-2">
             Especialidade
           </p>
           <input
-            v-model="registerForm.nome_exibicao"
+            v-model="registerForm.nome_especialidade"
             type="text"
             placeholder="Ex: Fisioterapeuta, Personal Trainer, Psicólogo..."
             class="form-input w-full rounded-xl border border-slate-200 h-14 px-4 focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
@@ -1692,11 +1708,14 @@ function navigateTo(screen: Screen) {
 
             <div class="min-w-0">
               <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
-                Bem-vindo de volta
+                Bem-vindo ao Attend
               </p>
               <h1 class="truncate text-[28px] font-black leading-none text-zinc-900">
                 Olá, {{ nomeProfissional }}
               </h1>
+              <p class="text-[13px] text-slate-500">
+                {{ especialidadeProfissional }}
+              </p>
             </div>
           </div>
 
