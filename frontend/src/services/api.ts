@@ -3,16 +3,25 @@ import axios, { AxiosRequestHeaders } from 'axios'
 import { getActiveTenantId } from './tenantSession'
 
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api',
 })
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token')
-  console.log('TOKEN ENVIADO NO INTERCEPTOR:', token) // Adicione este log
+  const tenantId = getActiveTenantId()
+
+  if (config.headers == null) {
+    config.headers = {} as any
+  }
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+
+  if (tenantId) {
+    config.headers['X-Tenant-Id'] = tenantId
+  }
+
   return config
 })
 

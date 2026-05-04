@@ -6,6 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '164.152.36.146', '0.0.0.0', 'attend.infralyze.com.br']  # Mude para produção
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -72,6 +73,13 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+from corsheaders.defaults import default_headers
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'authorization',
+    'x-tenant-id',
+]
 
 ROOT_URLCONF = 'aulas_project.urls'
 

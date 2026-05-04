@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue';
-import api from "./services/api";
+import apiClient from "./services/api";
 import { uploadFoto } from "./api/profile";
 import axios from 'axios';
 import TenantSwitcher from '@/components/TenantSwitcher.vue'
@@ -62,6 +62,8 @@ const registerForm = ref({
   // nome de exibição do profissional
   nome_exibicao: '',
 })
+
+
 const registerLoading = ref(false)
 const registerError = ref('')
 const registerSuccess = ref(false)
@@ -97,10 +99,7 @@ async function handleRegister() {
       documento: registerForm.value.documento,
     }
 
-    const { data } = await axios.post(
-      'http://127.0.0.1:8000/api/v1/registro-profissional/',
-      payload
-    )
+    const { data } = await apiClient.post('/v1/registro-profissional/', payload)
 
     localStorage.setItem('access_token', data.access)
     localStorage.setItem('refreshToken', data.refresh)
@@ -137,7 +136,7 @@ const loginLoading = ref(false);
 const loginError = ref('');
 
 // API CONFIG
-const API_URL = 'http://127.0.0.1:8000/api/v1';
+//const API_URL = 'http://127.0.0.1:8000/api/v1';
 
 
 const route = useRoute()
@@ -150,7 +149,7 @@ async function loadMe() {
   const token = localStorage.getItem('access_token')
   if (!token) return
 
-  const response = await api.get('/me/')
+  const response = await apiClient.get('/v1/me/')
   return response.data
 }
 
@@ -167,7 +166,7 @@ const handleLogin = async () => {
   loginError.value = '';
 
   try {
-    const response = await axios.post('http://127.0.0.1:8000/api/token/', {
+    const response = await apiClient.post('/token/', {
       email: loginForm.value.email,          // envia "admin@attend.com"
       password: loginForm.value.password,
     });
@@ -197,7 +196,7 @@ const handleLogin = async () => {
 
 // bootstrap para carregar dados do usuário logado e tenants disponíveis
 async function bootstrapAuthenticatedUser() {
-  const response = await api.get('/me/')
+  const response = await apiClient.get('/v1/me/')
   const me = response.data
 
   const tenants = me.tenants || []
@@ -325,7 +324,7 @@ const especialidadeProfissional = computed(() => {
 
 async function loadPerfil() {
   try {
-    const { data } = await api.get('/me/')
+    const { data } = await apiClient.get('/v1/me/')
 
     perfilUsuario.value = {
       nome: data.nome ?? 'Profissional',
@@ -362,7 +361,7 @@ async function onSelectProfilePhoto(event: Event) {
   try {
     uploadingPhoto.value = true
 
-    await api.post('/me/profissional/foto/', formData, {
+    await apiClient.post('/me/profissional/foto/', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
 
@@ -386,7 +385,7 @@ async function onSelectProfilePhoto(event: Event) {
 
 async function removerFotoPerfil() {
   try {
-    await api.delete('/me/profissional/foto/')
+    await apiClient.delete('/me/profissional/foto/')
     await loadPerfil()
   } catch (error: any) {
     console.error('Erro ao remover foto:', error)
@@ -414,7 +413,7 @@ async function logout() {
     const refresh = localStorage.getItem('refresh_token')
 
     if (refresh) {
-      await api.post('/logout/', { refresh_token: refresh })
+      await apiClient.post('/logout/', { refresh_token: refresh })
     }
   } catch (error) {
     console.error('Erro no logout remoto:', error)
@@ -423,7 +422,7 @@ async function logout() {
     localStorage.removeItem('refresh_token')
     localStorage.removeItem('active_tenant_id')
 
-    delete api.defaults.headers.common.Authorization
+    delete apiClient.defaults.headers.common.Authorization
 
     perfilUsuario.value = {
       nome: 'Profissional',
@@ -502,7 +501,7 @@ async function loadDashboard() {
     loadingDashboard.value = true
     // sessões de hoje
     const hoje = new Date().toISOString().slice(0, 10)
-    const { data } = await api.get('/sessoes/', {
+    const { data } = await apiClient.get('/v1/sessoes/', {
       params: { data_inicio: hoje }
     })
     sessoesHoje.value = data
@@ -614,7 +613,7 @@ async function fetchClients() {
   if (!token) return
 
   try {
-    const { data } = await api.get('/clientes/')
+    const { data } = await apiClient.get('/v1/clientes/')
     console.log('clientes carregados:', data)
     clients.value = data
   } catch (e: any) {
@@ -636,7 +635,7 @@ async function fetchClients() {
 // =========================
 async function loadClientDetail(clientId: string | number): Promise<void> {
   try {
-    const response = await api.get<Cliente>(`/clientes/${clientId}/`)
+    const response = await apiClient.get<Cliente>(`/v1/clientes/${clientId}/`)
     console.log('detalhe do cliente:', response.data)
     selectedClient.value = response.data
   } catch (error: any) {
@@ -740,9 +739,9 @@ async function saveClient(): Promise<void> {
     let response
 
     if (isEditing) {
-      response = await api.put(`/clientes/${editingClientId.value}/`, payload)
+      response = await apiClient.put(`/v1/clientes/${editingClientId.value}/`, payload)
     } else {
-      response = await api.post('/clientes/', payload)
+      response = await apiClient.post('/v1/clientes/', payload)
     }
 
     console.log('cliente salvo:', response.data)
@@ -789,7 +788,7 @@ async function deleteClient(clientId: string | number): Promise<void> {
   try {
     isDeletingClient.value = true
 
-    await api.delete(`/clientes/${clientId}/`)
+    await apiClient.delete(`/v1/clientes/${clientId}/`)
     await fetchClients()
 
     if (selectedClient.value?.id === clientId) {
@@ -836,7 +835,7 @@ async function loadClientPackages(clientId: string | number) {
     loadingPackages.value = true
     packageError.value = ''
 
-    const { data } = await api.get('/pacotes-sessoes/', {
+    const { data } = await apiClient.get('/v1/pacotes-sessoes/', {
       params: { cliente: clientId },
     })
 
@@ -873,6 +872,7 @@ function openAttendance(pkg: any) {
     status: 'agendada',
     observacoes: '',
   }
+  
   currentScreen.value = 'attendance-new'
 }
 
@@ -896,9 +896,9 @@ watch(currentScreen, async (screen) => {
     }
   }
 
-  if (screen === 'attendance') {
-    if (selectedClient.value?.id) {
-      await loadClientSessoes(selectedClient.value.id)
+  if (screen === 'attendance-new') {
+    if (selectedPackage.value?.id) {
+      await loadClientSessoes(selectedPackage.value.id)
     }
   }
 })
@@ -1070,7 +1070,7 @@ async function salvarPacote(pkg: any) {
   try {
     savingPackageIds.value[pkg.id] = true
 
-    await api.patch(`/pacotes-sessoes/${pkg.id}/`, {
+    await apiClient.patch(`/v1/pacotes-sessoes/${pkg.id}/`, {
       sessoes_preview: pkg.sessoes_preview || [],
       parcelas_preview: pkg.parcelas_preview || [],
     })
@@ -1138,7 +1138,7 @@ function isPlanoAvancadoPacote(planoTipo?: string): boolean {
 
 async function fetchPackages(): Promise<void> {
   try {
-    const response = await api.get('/pacotes-sessoes/')
+    const response = await apiClient.get('/v1/pacotes-sessoes/')
     packages.value = response.data
   } catch (error) {
     console.error('Erro ao carregar pacotes:', error)
@@ -1170,7 +1170,7 @@ async function savePackage(): Promise<void> {
     console.log(payload)
     console.log(JSON.stringify(payload, null, 2))
 
-    const response = await api.post('/pacotes-sessoes/', payload)
+    const response = await apiClient.post('/v1/pacotes-sessoes/', payload)
 
     console.log('=== RESPONSE PACOTE ===')
     console.log(response.data)
@@ -1242,7 +1242,7 @@ async function loadClientSessoes(clienteId: string, pacoteId?: string) {
     loadingSessoes.value = true
     const params: any = { cliente: clienteId }
     if (pacoteId) params.pacote = pacoteId
-    const { data } = await api.get('/sessoes/', { params })
+    const { data } = await apiClient.get('/v1/sessoes/', { params })
     clientSessoes.value = data
   } catch (e) {
     console.error(e)
@@ -1266,7 +1266,7 @@ async function darBaixaSessao(sessaoId: string) {
       alert('Nenhum cliente selecionado')
       return
     }
-    await api.post(`/sessoes/${sessaoId}/dar_baixa/`)
+    await apiClient.post(`/v1/sessoes/${sessaoId}/dar_baixa/`)
 
     // Converter id para string se necessário
     const clientId = String(selectedClient.value.id)
@@ -1301,11 +1301,11 @@ async function saveAttendance() {
       observacoes: newAttendance.value.observacoes,
     }
 
-    const { data } = await api.post('/sessoes/', payload)
+    const { data } = await apiClient.post('/v1/sessoes/', payload)
 
     // se já foi registrada como realizada, dá baixa automática no pacote
     if (newAttendance.value.status === 'realizada') {
-      await api.post(`/sessoes/${data.id}/dar_baixa/`)
+      await apiClient.post(`/v1/sessoes/${data.id}/dar_baixa/`)
     }
 
     if (selectedClient.value) {
@@ -1329,7 +1329,7 @@ async function loadPackages() {
   try {
     loadingPackages.value = true
     packageError.value = ''
-    const { data } = await api.get('/pacotes-sessoes/')
+    const { data } = await apiClient.get('/v1/pacotes-sessoes/')
     packages.value = data
   } catch (e: any) {
     console.error(e)
