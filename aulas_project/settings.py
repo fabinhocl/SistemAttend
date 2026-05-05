@@ -6,7 +6,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '164.152.36.146', '0.0.0.0', 'attend.infralyze.com.br']  # Mude para produção
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '164.152.36.146',
+    '0.0.0.0',
+    'attend.infralyze.com.br',
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -67,9 +73,12 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://192.168.1.8:5173"
+    "http://192.168.1.8:5173",
+    "https://attend.infralyze.com.br",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
