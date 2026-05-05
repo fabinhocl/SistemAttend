@@ -116,7 +116,7 @@ DATABASES = {
         'NAME': 'attend_db',
         'USER': 'attend_user',
         'PASSWORD': 'Sys.Admin!@#098',
-        'HOST': 'localhost',  # ou host do servidor/contêiner
+        'HOST': 'db',  # ou host do servidor/contêiner
         'PORT': '5432',       # porta padrão do Postgres
     }
 }
