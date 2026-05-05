@@ -110,14 +110,12 @@ TEMPLATES = [
 
 DATABASES = {
     'default': {
-        #'ENGINE': 'django.db.backends.sqlite3',
-        #'NAME': BASE_DIR / 'db.sqlite3',
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'attend_db',
-        'USER': 'attend_user',
-        'PASSWORD': 'Sys.Admin!@#098',
-        'HOST': 'db',  # ou host do servidor/contêiner
-        'PORT': '5432',       # porta padrão do Postgres
+        'NAME': config('POSTGRES_DB', default='attend_db'),
+        'USER': config('POSTGRES_USER', default='attend_user'),
+        'PASSWORD': config('POSTGRES_PASSWORD', default='Sys.Admin!@#098'),
+        'HOST': config('POSTGRES_HOST', default='db'),
+        'PORT': config('POSTGRES_PORT', default='5432'),
     }
 }
 
@@ -131,6 +129,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'static'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
